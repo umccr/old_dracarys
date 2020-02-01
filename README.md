@@ -1,2 +1,2 @@
 # dracarys
-R package for playing with DRAGEN output
+Playing with DRAGEN fire.
