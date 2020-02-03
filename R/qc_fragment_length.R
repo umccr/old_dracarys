@@ -1,11 +1,13 @@
-#' Read fragment length hist file
+#' Read Fragment Length Hist File
 #'
 #' Reads the `fragment_length_hist.csv` file, which contains the
 #' insert length distribution for each sample.
 #'
 #' @param x Path to `fragment_length_hist.csv` file.
 #' @return A tibble with the following columns:
-#'   - fragmentLength
+#'   - fragmentLength: estimated fragment length
+#'   - count: number of reads with estimated fragment length
+#'   - sample: name of sample
 #'
 #' @examples
 #' x <- system.file("extdata/Colo829.fragment_length_hist.csv.gz", package = "dracarys")
@@ -25,7 +27,7 @@ read_fragment_length_hist <- function(x) {
     dplyr::select(-.data$name)
 }
 
-#' Plot insert length distribution
+#' Plot Fragment Length Distribution
 #'
 #' Plots the insert length distributions as written in the `fragment_length_hist.csv` file.
 #'
