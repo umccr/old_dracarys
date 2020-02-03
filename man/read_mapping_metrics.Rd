@@ -10,7 +10,9 @@ read_mapping_metrics(x)
 \item{x}{Path to \code{mapping_metrics.csv} file.}
 }
 \value{
-A tibble with the following columns:
+A list containing two elements:
+\itemize{
+\item data: tibble with the following columns:
 \itemize{
 \item category: summary or read group
 \item Phenotype: e.g. tumor, normal
@@ -18,6 +20,8 @@ A tibble with the following columns:
 \item var: metric variable
 \item count: count of reads
 \item pct: percentage of reads
+}
+\item abbreviations: named character vector with column abbreviations
 }
 }
 \description{
