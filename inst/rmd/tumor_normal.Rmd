@@ -1,0 +1,110 @@
+---
+author: "University of Melbourne Centre for Cancer Research"
+date: "`r format(Sys.time(), '%a %Y-%b-%d %H:%M')`"
+output:
+  html_document:
+    theme: flatly # cosmo # simplex
+    toc: false
+    code_download: true
+    css: style.css
+  rmdformats::material:
+    highlight: kate
+params:
+  res_dir: "/path/to/dragen/results"
+  nm: "COLO829"
+title: "`r glue::glue('DRAGEN Tumor-Normal Results for {params$nm}')`"
+description: "Results from DRAGEN tumor-normal analysis"
+---
+
+<style type="text/css">
+.main-container {
+  max-width: 2000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+
+
+```{r load_knitr, include=F}
+require(knitr)
+knitr::opts_chunk$set(
+  echo = FALSE
+)
+```
+
+```{r render_report_interactively, eval=F, echo=F}
+params <- function(x) {
+  paths <- list(
+    local = list(
+      res_dir = here::here("nogit/COLO829"),
+      nm = "COLO829")
+  )
+  paths[[x]]
+}
+params <- params("local")
+
+render_me <- function() {
+  rmarkdown::render(
+    input = here::here("inst/rmd/tumor_normal.Rmd"),
+    params = params)
+}
+render_me()
+```
+
+```{r load_pkgs, message=F, warning=F}
+suppressPackageStartupMessages(library(bedr))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(dracarys))
+suppressPackageStartupMessages(library(DT))
+suppressPackageStartupMessages(library(glue))
+suppressPackageStartupMessages(library(kableExtra))
+suppressPackageStartupMessages(library(purrr))
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(tidyr))
+```
+
+```{r var_setup}
+nm <- params$nm
+res_dir <- params$res_dir
+```
+
+
+### QC {#qc}
+
+#### Fragment Length Distribution {#qc_frag_len_distr}
+
+```{r qc_frag_len_distr, fig.height=3.5}
+dracarys::plot_fragment_length_hist(glue("{res_dir}/{nm}.fragment_length_hist.csv"))
+```
+
+## Addendum {.tabset .tabset-fade #addendum}
+
+### Report Inputs
+
+```{r report_inputs}
+dplyr::tibble(name = names(params), value = unlist(params)) %>%
+  knitr::kable(format = "html") %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "left") %>%
+  kableExtra::column_spec(1, bold = TRUE) %>%
+  kableExtra::scroll_box(height = "200px")
+```
+
+### R Session Info
+
+```{r session_info}
+si <- devtools::session_info(include_base = TRUE)
+unclass(si$packages) %>%
+  dplyr::as_tibble() %>%
+  dplyr::mutate(main_pkgs = ifelse(package %in% c("woofr", "rock", "base"), "A", "B")) %>%
+  dplyr::arrange(main_pkgs, package) %>%
+  dplyr::select(package, version = ondiskversion, path, datestamp = date) %>%
+  knitr::kable(format = "html") %>%
+  kableExtra::kable_styling(full_width = TRUE, position = "left") %>%
+  kableExtra::column_spec(1, bold = TRUE) %>%
+  kableExtra::scroll_box(height = "400px")
+```
+
+
+***
+
+<p>&nbsp;</p>

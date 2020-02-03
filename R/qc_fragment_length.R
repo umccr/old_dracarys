@@ -45,7 +45,7 @@ plot_fragment_length_hist <- function(x, min_count = 10) {
     ggplot2::ggplot(ggplot2::aes(x = .data$fragmentLength, y = .data$count, colour = sample)) +
     ggplot2::geom_line() +
     ggplot2::xlab("Insert Length (bp)") +
-    ggplot2::ylab("Read Count") +
+    ggplot2::ylab(glue::glue("Read Count (min: {min_count})")) +
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = c(0.9, 0.9),
                    legend.justification = c(1, 1),
