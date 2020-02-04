@@ -1,5 +1,3 @@
-
-
 #' Read Replay File
 #'
 #' Reads the `replay.json` file, which contains the DRAGEN command line,
@@ -29,9 +27,9 @@ read_replay <- function(x) {
 
   res$dragen_config <- res$dragen_config %>%
     dplyr::mutate(value = ifelse(grepl("https", .data$value), "pre-signed URL maybe?", .data$value),
-                  value = ifelse(name == "vc-decoy-contigs", "lots of contigs", .data$value)) %>%
-    dplyr::filter(!grepl("credentials", name)) %>%
-    dplyr::arrange(name)
+                  value = ifelse(.data$name == "vc-decoy-contigs", "lots of contigs", .data$value)) %>%
+    dplyr::filter(!grepl("credentials", .data$name)) %>%
+    dplyr::arrange(.data$name)
 
   res$system <- res$system %>%
     tibble::as_tibble() %>%
