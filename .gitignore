@@ -38,8 +38,6 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# RMarkdown html
-*.html
 
 # nogit data
 nogit/
