@@ -82,7 +82,8 @@ time_metrics <- glue::glue("{res_dir}/{nm}.time_metrics.csv") %>%
 time_metrics %>%
   knitr::kable(format = "html", col.names = NULL) %>%
   kableExtra::kable_styling(full_width = FALSE, position = "left",
-                            bootstrap_options = c("striped", "hover")) %>%
+                            bootstrap_options = c("striped", "bordered",
+                                                  "condensed", "hover")) %>%
   kableExtra::column_spec(1, bold = TRUE) %>%
   kableExtra::row_spec(nrow(time_metrics), bold = T,
                        color = "white", background = "#2c3e50")
@@ -244,16 +245,19 @@ replay <- glue::glue("{res_dir}/{nm}-replay.json") %>%
 ```{r dragen_replay_system}
 replay$system %>%
   knitr::kable(format = "html", col.names = NULL) %>%
-  kableExtra::kable_styling(full_width = FALSE, position = "left") %>%
-  kableExtra::column_spec(1, bold = TRUE) %>%
-  kableExtra::scroll_box(height = "200px")
+  kableExtra::kable_styling(full_width = FALSE, position = "left",
+                            bootstrap_options = c("striped", "bordered",
+                                                  "condensed", "hover")) %>%
+  kableExtra::column_spec(1, bold = TRUE)
 ```
 
 #### Parameters
 ```{r dragen_replay_config}
 replay$dragen_config %>%
   knitr::kable(format = "html") %>%
-  kableExtra::kable_styling(full_width = FALSE, position = "left") %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "left",
+                            bootstrap_options = c("striped", "bordered",
+                                                  "condensed", "hover")) %>%
   kableExtra::scroll_box(height = "200px")
 ```
 
@@ -262,9 +266,10 @@ replay$dragen_config %>%
 ```{r report_inputs, eval=T}
 dplyr::tibble(name = names(params), value = unlist(params)) %>%
   knitr::kable(format = "html") %>%
-  kableExtra::kable_styling(full_width = FALSE, position = "left") %>%
-  kableExtra::column_spec(1, bold = TRUE) %>%
-  kableExtra::scroll_box(height = "200px")
+  kableExtra::kable_styling(full_width = FALSE, position = "left",
+                            bootstrap_options = c("striped", "bordered",
+                                                  "condensed", "hover")) %>%
+  kableExtra::column_spec(1, bold = TRUE)
 ```
 
 ### R Session Info
@@ -277,7 +282,9 @@ unclass(si$packages) %>%
   dplyr::arrange(main_pkgs, package) %>%
   dplyr::select(package, version = ondiskversion, path, datestamp = date) %>%
   knitr::kable(format = "html") %>%
-  kableExtra::kable_styling(full_width = FALSE, position = "left") %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "left",
+                            bootstrap_options = c("striped", "bordered",
+                                                  "condensed", "hover")) %>%
   kableExtra::column_spec(1, bold = TRUE) %>%
   kableExtra::scroll_box(height = "200px")
 ```
