@@ -52,7 +52,6 @@ render_me()
 ```
 
 ```{r load_pkgs, message=F, warning=F}
-suppressPackageStartupMessages(library(bedr))
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(dracarys))
 suppressPackageStartupMessages(library(DT))
@@ -72,10 +71,28 @@ res_dir <- params$res_dir
 
 ### QC {#qc}
 
+#### Coverage {.tabset .tabset-fade #qc_coverage}
+
+#### Timing Metrics {#qc_time_metrics}
+
+```{r qc_time_metrics}
+time_metrics <- glue::glue("{res_dir}/{nm}.time_metrics.csv") %>%
+  dracarys::read_time_metrics()
+
+time_metrics %>%
+  knitr::kable(format = "html", col.names = NULL) %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "left",
+                            bootstrap_options = c("striped", "hover")) %>%
+  kableExtra::column_spec(1, bold = TRUE) %>%
+  kableExtra::row_spec(nrow(time_metrics), bold = T,
+                       color = "white", background = "#2c3e50")
+```
+
+
 #### Mapping Metrics {.tabset .tabset-fade #qc_map_metrics_tab}
 
 ```{r qc_map_metrics_tab}
-mapping_metrics <- read_mapping_metrics(glue::glue("{res_dir}/{nm}.mapping_metrics.csv"))
+mapping_metrics <- dracarys::read_mapping_metrics(glue::glue("{res_dir}/{nm}.mapping_metrics.csv"))
 mapping_metrics <- list(
   data = mapping_metrics,
   abbrev = dplyr::distinct(mapping_metrics, var, var_abbrev),
@@ -116,7 +133,6 @@ dpct %>%
                   backgroundSize = "90% 90%", backgroundRepeat = 'no-repeat',
                   backgroundPosition = 'center')
 ```
-
 
 ##### Counts
 
@@ -210,21 +226,40 @@ dpct %>%
                   backgroundPosition = 'center')
 ```
 
-
-
-
-
 #### Fragment Length Distribution {#qc_frag_len_distr}
 
 ```{r qc_frag_len_distr, fig.height=3.5}
-dracarys::plot_fragment_length_hist(glue("{res_dir}/{nm}.fragment_length_hist.csv"))
+dracarys::plot_fragment_length_hist(glue::glue("{res_dir}/{nm}.fragment_length_hist.csv"))
 ```
 
 ## Addendum {.tabset .tabset-fade #addendum}
 
+### DRAGEN {.tabset .tabset-fade}
+```{r dragen_read_replay}
+replay <- glue::glue("{res_dir}/{nm}-replay.json") %>%
+  dracarys::read_replay()
+```
+
+#### Version
+```{r dragen_replay_system}
+replay$system %>%
+  knitr::kable(format = "html", col.names = NULL) %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "left") %>%
+  kableExtra::column_spec(1, bold = TRUE) %>%
+  kableExtra::scroll_box(height = "200px")
+```
+
+#### Parameters
+```{r dragen_replay_config}
+replay$dragen_config %>%
+  knitr::kable(format = "html") %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "left") %>%
+  kableExtra::scroll_box(height = "200px")
+```
+
 ### Report Inputs
 
-```{r report_inputs, eval=F}
+```{r report_inputs, eval=T}
 dplyr::tibble(name = names(params), value = unlist(params)) %>%
   knitr::kable(format = "html") %>%
   kableExtra::kable_styling(full_width = FALSE, position = "left") %>%
@@ -234,7 +269,7 @@ dplyr::tibble(name = names(params), value = unlist(params)) %>%
 
 ### R Session Info
 
-```{r session_info, eval=F}
+```{r session_info, eval=T}
 si <- devtools::session_info(include_base = TRUE)
 unclass(si$packages) %>%
   dplyr::as_tibble() %>%
@@ -242,9 +277,9 @@ unclass(si$packages) %>%
   dplyr::arrange(main_pkgs, package) %>%
   dplyr::select(package, version = ondiskversion, path, datestamp = date) %>%
   knitr::kable(format = "html") %>%
-  kableExtra::kable_styling(full_width = TRUE, position = "left") %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "left") %>%
   kableExtra::column_spec(1, bold = TRUE) %>%
-  kableExtra::scroll_box(height = "400px")
+  kableExtra::scroll_box(height = "200px")
 ```
 
 
