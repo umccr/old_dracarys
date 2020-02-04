@@ -22,8 +22,9 @@ read_replay <- function(x) {
   res <- x %>%
     jsonlite::read_json(simplifyVector = TRUE) %>%
     purrr::map_if(is.data.frame, tibble::as_tibble)
-  stopifnot(length(res) == 4,
-            all(names(res) %in% c("command_line", "dragen_config", "inputs", "system")))
+  assertthat::assert_that(
+    length(res) == 4,
+    all(names(res) %in% c("command_line", "dragen_config", "inputs", "system")))
 
   res$dragen_config <- res$dragen_config %>%
     dplyr::mutate(value = ifelse(grepl("https", .data$value), "pre-signed URL maybe?", .data$value),

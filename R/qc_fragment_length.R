@@ -14,8 +14,11 @@
 #' read_fragment_length_hist(x)
 #' @export
 read_fragment_length_hist <- function(x) {
-  stopifnot(file.exists(x))
-  readr::read_lines(x) %>%
+
+  d <- readr::read_lines(x)
+  assertthat::assert_that(grepl("#Sample", d[1]))
+
+  d %>%
     tibble::enframe() %>%
     dplyr::mutate(
       sample = ifelse(

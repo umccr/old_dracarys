@@ -19,7 +19,10 @@
 #' @export
 read_varcalling_metrics <- function(x) {
 
-  d <- readr::read_lines(x) %>%
+  d <- readr::read_lines(x)
+  assertthat::assert_that(grepl("VARIANT CALLER", d[1]))
+
+  d %>%
     tibble::enframe(name = "name", value = "value") %>%
     tidyr::separate(.data$value, into = c("category", "sample", "extra"), sep = ",", extra = "merge") %>%
     tidyr::separate(.data$extra, into = c("var", "value"), sep = ",", extra = "merge") %>%
@@ -31,6 +34,4 @@ read_varcalling_metrics <- function(x) {
         grepl("POSTFILTER", .data$category) ~ "postfilter",
         TRUE ~ "unknown")) %>%
     dplyr::select(.data$category, .data$sample, .data$var, .data$count, .data$pct)
-
-  d
 }

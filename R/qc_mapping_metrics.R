@@ -79,7 +79,10 @@ read_mapping_metrics <- function(x) {
     "DRAGEN mapping rate [mil. reads/second]" = "Map Rate"
   )
 
-  d <- readr::read_lines(x) %>%
+  d <- readr::read_lines(x)
+  assertthat::assert_that(grepl("MAPPING/ALIGNING", d[1]))
+
+  d %>%
     tibble::enframe(name = "name", value = "value") %>%
     tidyr::separate(.data$value, into = c("category", "RG", "extra"), sep = ",", extra = "merge") %>%
     tidyr::separate(.data$extra, into = c("var", "value"), sep = ",", extra = "merge") %>%
@@ -96,7 +99,6 @@ read_mapping_metrics <- function(x) {
       RG = ifelse(.data$RG == "", "TOTAL", .data$RG),
       var = ifelse(grepl("Total.*reads", .data$var), "Total Reads per RG", .data$var),
       var_abbrev = ifelse(.data$var %in% names(abbrev_nm), abbrev_nm[.data$var], .data$var)) %>%
-    dplyr::select(.data$category, .data$Phenotype, .data$RG, .data$var, .data$var_abbrev, .data$count, .data$pct)
-
-  d
+    dplyr::select(.data$category, .data$Phenotype, .data$RG,
+                  .data$var, .data$var_abbrev, .data$count, .data$pct)
 }
