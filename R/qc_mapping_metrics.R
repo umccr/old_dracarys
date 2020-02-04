@@ -8,8 +8,7 @@
 #' terms of pairs or alignments).
 #'
 #' @param x Path to `mapping_metrics.csv` file.
-#' @return A list containing two elements:
-#'   - data: tibble with the following columns:
+#' @return tibble with the following columns:
 #'     - category: summary or read group
 #'     - Phenotype: e.g. tumor, normal
 #'     - RG: read group
