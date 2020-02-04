@@ -57,6 +57,7 @@ suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(dracarys))
 suppressPackageStartupMessages(library(DT))
 suppressPackageStartupMessages(library(glue))
+suppressPackageStartupMessages(library(jsonlite))
 suppressPackageStartupMessages(library(kableExtra))
 suppressPackageStartupMessages(library(purrr))
 suppressPackageStartupMessages(library(readr))
@@ -75,23 +76,26 @@ res_dir <- params$res_dir
 
 ```{r qc_map_metrics_tab}
 mapping_metrics <- read_mapping_metrics(glue::glue("{res_dir}/{nm}.mapping_metrics.csv"))
-mapping_metrics <- list(data = mapping_metrics,
-                        abbrev = dplyr::distinct(mapping_metrics, var, var_abbrev),
-                        count = tidyr::pivot_wider(
-                          mapping_metrics, id_cols = c(Phenotype, RG),
-                          names_from = var_abbrev, values_from = count),
-                        pct = tidyr::pivot_wider(
-                          mapping_metrics, id_cols = c(Phenotype, RG),
-                          names_from = var_abbrev, values_from = pct)
-                        )
-a <- mapping_metrics$abbrev
+mapping_metrics <- list(
+  data = mapping_metrics,
+  abbrev = dplyr::distinct(mapping_metrics, var, var_abbrev),
+  count = tidyr::pivot_wider(
+    mapping_metrics, id_cols = c(Phenotype, RG),
+    names_from = var_abbrev, values_from = count),
+  pct = tidyr::pivot_wider(
+    mapping_metrics, id_cols = c(Phenotype, RG),
+    names_from = var_abbrev, values_from = pct)
+)
+
+mma <- mapping_metrics$abbrev
 ```
 
 ##### Percentages
 
 ```{r qc_map_metrics_tab_pct}
 dpct <- mapping_metrics$pct
-tab_descr <- a$var[match(colnames(dpct), a$var_abbrev)] %>% jsonlite::toJSON()
+tab_descr <- mma$var[match(colnames(dpct), mma$var_abbrev)] %>%
+  jsonlite::toJSON()
 
 dpct %>%
   DT::datatable(rownames = FALSE,
@@ -105,7 +109,7 @@ dpct %>%
                 caption = "Bar range: 90-100",
                 extensions = c("Scroller", "KeyTable"),
                 options = list(
-                  scroller = TRUE, scrollY = 200, scrollX = TRUE,
+                  scroller = TRUE, scrollY = 150, scrollX = TRUE,
                   autoWidth = TRUE, keys = TRUE, dom = 'lfrtip')) %>%
   DT::formatStyle(colnames(dpct),
                   background = DT::styleColorBar(c(90, 100), color = "lightblue"),
@@ -116,9 +120,10 @@ dpct %>%
 
 ##### Counts
 
-```{r qc_map_metrics_tab_counts}
+```{r qc_map_metrics_tab_count}
 dcount <- mapping_metrics$count
-tab_descr <- a$var[match(colnames(dcount), a$var_abbrev)] %>% jsonlite::toJSON()
+tab_descr <- mma$var[match(colnames(dcount), mma$var_abbrev)] %>%
+  jsonlite::toJSON()
 
 dcount %>%
   DT::datatable(rownames = FALSE,
@@ -131,11 +136,83 @@ dcount %>%
                 class = "cell-border display compact",
                 extensions = c("Scroller", "KeyTable"),
                 options = list(
-                  scroller = TRUE, scrollY = 200, scrollX = TRUE,
+                  scroller = TRUE, scrollY = 150, scrollX = TRUE,
                   autoWidth = TRUE, keys = TRUE, dom = 'lfrtip')) %>%
   DT::formatCurrency(colnames(dcount),
                      currency = "", interval = 3, mark = ",", digits = 0)
 ```
+
+
+#### Variant Calling Metrics {.tabset .tabset-fade #qc_vc_metrics_tab}
+
+```{r qc_vc_metrics_tab}
+vc_metrics <- read_varcalling_metrics(glue::glue("{res_dir}/{nm}.vc_metrics.csv")) %>%
+  dplyr::filter(category != "summary")
+vc_metrics <- list(
+  data = vc_metrics,
+  count = tidyr::pivot_wider(
+    vc_metrics, id_cols = c(category, sample),
+    names_from = var, values_from = count),
+  pct = tidyr::pivot_wider(
+    vc_metrics, id_cols = c(category, sample),
+    names_from = var, values_from = pct)
+)
+```
+
+##### Counts
+
+```{r qc_vc_metrics_tab_count}
+dcount <- vc_metrics$count
+# tab_descr <- mma$var[match(colnames(dcount), mma$var_abbrev)] %>%
+#   jsonlite::toJSON()
+
+dcount %>%
+  DT::datatable(rownames = FALSE,
+                # callback = JS(glue::glue("
+                #   var tips = {tab_descr};
+                #   var header = table.columns().header();
+                #   for (var i = 0; i < tips.length; i++) {{
+                #     $(header[i]).attr('title', tips[i]);
+                #   }}")),
+                class = "cell-border display compact",
+                extensions = c("Scroller", "KeyTable"),
+                options = list(
+                  scroller = TRUE, scrollY = 150, scrollX = TRUE,
+                  autoWidth = TRUE, keys = TRUE, dom = 'lfrtip')) %>%
+  DT::formatCurrency(colnames(dcount),
+                     currency = "", interval = 3, mark = ",", digits = 0)
+```
+
+##### Percentages
+
+```{r qc_vc_metrics_tab_pct}
+dpct <- vc_metrics$pct
+# tab_descr <- mma$var[match(colnames(dpct), mma$var_abbrev)] %>%
+#   jsonlite::toJSON()
+
+dpct %>%
+  DT::datatable(rownames = FALSE,
+                # callback = JS(glue::glue("
+                #   var tips = {tab_descr};
+                #   var header = table.columns().header();
+                #   for (var i = 0; i < tips.length; i++) {{
+                #     $(header[i]).attr('title', tips[i]);
+                #   }}")),
+                class = "cell-border display compact",
+                caption = "Bar range: 90-100",
+                extensions = c("Scroller", "KeyTable"),
+                options = list(
+                  scroller = TRUE, scrollY = 150, scrollX = TRUE,
+                  autoWidth = TRUE, keys = TRUE, dom = 'lfrtip')) %>%
+  DT::formatStyle(colnames(dpct),
+                  background = DT::styleColorBar(c(90, 100), color = "lightblue"),
+                  backgroundSize = "90% 90%", backgroundRepeat = 'no-repeat',
+                  backgroundPosition = 'center')
+```
+
+
+
+
 
 #### Fragment Length Distribution {#qc_frag_len_distr}
 
