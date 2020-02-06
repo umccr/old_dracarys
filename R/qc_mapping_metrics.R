@@ -98,7 +98,7 @@ read_mapping_metrics <- function(x) {
         TRUE ~ "unknown"),
       RG = ifelse(.data$RG == "", "TOTAL", .data$RG),
       var = ifelse(grepl("Total.*reads", .data$var), "Total Reads per RG", .data$var),
-      var_abbrev = ifelse(.data$var %in% names(abbrev_nm), abbrev_nm[.data$var], .data$var)) %>%
+      var_abbrev = dplyr::recode(.data$var, !!!abbrev_nm)) %>%
     dplyr::select(.data$category, .data$Phenotype, .data$RG,
                   .data$var, .data$var_abbrev, .data$count, .data$pct)
 }
