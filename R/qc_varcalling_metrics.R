@@ -12,6 +12,11 @@
 #'
 #' @param x Path to `vc_metrics.csv` file.
 #' @return tibble with the following columns:
+#'   - category
+#'   - sample
+#'   - var: variable name
+#'   - count: count value
+#'   - pct: percent value
 #'
 #' @examples
 #' x <- system.file("extdata/COLO829.vc_metrics.csv.gz", package = "dracarys")

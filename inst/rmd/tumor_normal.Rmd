@@ -69,11 +69,9 @@ res_dir <- params$res_dir
 ```
 
 
-### QC {#qc}
+### QC {.tabset .tabset-fade #qc}
 
-#### Coverage {.tabset .tabset-fade #qc_coverage}
-
-#### Timing Metrics {#qc_time_metrics}
+#### Timing
 
 ```{r qc_time_metrics}
 time_metrics <- glue::glue("{res_dir}/{nm}.time_metrics.csv") %>%
@@ -90,7 +88,73 @@ time_metrics %>%
 ```
 
 
-#### Mapping Metrics {.tabset .tabset-fade #qc_map_metrics_tab}
+
+#### Coverage Metrics
+
+
+```{r qc_cov_metrics}
+lab_tumor <- "tumor"
+lab_normal <- "normal"
+cov_metrics_tumor <-
+  glue::glue("{res_dir}/{nm}.wgs_coverage_metrics_{lab_tumor}.csv") %>%
+  dracarys::read_wgs_coverage_metrics(label = lab_tumor)
+cov_metrics_normal <-
+  glue::glue("{res_dir}/{nm}.wgs_coverage_metrics_{lab_normal}.csv") %>%
+  dracarys::read_wgs_coverage_metrics(label = lab_normal)
+
+cov_metrics <- dplyr::bind_rows(cov_metrics_tumor, cov_metrics_normal)
+```
+
+```{r qc_cov_metrics_count}
+cov_metrics_count <- cov_metrics %>%
+  tidyr::pivot_wider(id_cols = label,
+                     names_from = var_abbrev,
+                     values_from = count) %>%
+  dplyr::select_if(colSums(!is.na(.)) > 0)
+
+cov_metrics_count %>%
+  DT::datatable(rownames = FALSE,
+                # callback = JS(glue::glue("
+                #   var tips = {tab_descr};
+                #   var header = table.columns().header();
+                #   for (var i = 0; i < tips.length; i++) {{
+                #     $(header[i]).attr('title', tips[i]);
+                #   }}")),
+                caption = "Counts",
+                class = "cell-border display compact",
+                extensions = c("Scroller", "KeyTable"),
+                options = list(
+                  scroller = TRUE, scrollY = 150, keys = TRUE, dom = 'lfrtip')) %>%
+  DT::formatCurrency(colnames(cov_metrics_count),
+                     currency = "", interval = 3, mark = ",", digits = 0)
+```
+
+```{r qc_cov_metrics_pct}
+cov_metrics_pct <- cov_metrics %>%
+  tidyr::pivot_wider(id_cols = label,
+                     names_from = var_abbrev,
+                     values_from = pct) %>%
+  dplyr::select_if(colSums(!is.na(.)) > 0)
+
+cov_metrics_pct %>%
+  DT::datatable(rownames = FALSE,
+                # callback = JS(glue::glue("
+                #   var tips = {tab_descr};
+                #   var header = table.columns().header();
+                #   for (var i = 0; i < tips.length; i++) {{
+                #     $(header[i]).attr('title', tips[i]);
+                #   }}")),
+                caption = "Percentages",
+                class = "cell-border display compact",
+                extensions = c("Scroller", "KeyTable"),
+                options = list(
+                  scroller = TRUE, scrollY = 150,
+                  keys = TRUE, dom = 'lfrtip'))
+```
+
+#### Cov Plots
+
+#### Mapping Metrics
 
 ```{r qc_map_metrics_tab}
 mapping_metrics <- dracarys::read_mapping_metrics(glue::glue("{res_dir}/{nm}.mapping_metrics.csv"))
@@ -108,10 +172,9 @@ mapping_metrics <- list(
 mma <- mapping_metrics$abbrev
 ```
 
-##### Percentages
-
 ```{r qc_map_metrics_tab_pct}
-dpct <- mapping_metrics$pct
+dpct <- mapping_metrics$pct %>%
+  dplyr::select_if(colSums(!is.na(.)) > 0)
 tab_descr <- mma$var[match(colnames(dpct), mma$var_abbrev)] %>%
   jsonlite::toJSON()
 
@@ -123,8 +186,8 @@ dpct %>%
                   for (var i = 0; i < tips.length; i++) {{
                     $(header[i]).attr('title', tips[i]);
                   }}")),
+                caption = "Percentages. Bar range: 90-100",
                 class = "cell-border display compact",
-                caption = "Bar range: 90-100",
                 extensions = c("Scroller", "KeyTable"),
                 options = list(
                   scroller = TRUE, scrollY = 150, scrollX = TRUE,
@@ -135,10 +198,9 @@ dpct %>%
                   backgroundPosition = 'center')
 ```
 
-##### Counts
-
 ```{r qc_map_metrics_tab_count}
-dcount <- mapping_metrics$count
+dcount <- mapping_metrics$count %>%
+  dplyr::select_if(colSums(!is.na(.)) > 0)
 tab_descr <- mma$var[match(colnames(dcount), mma$var_abbrev)] %>%
   jsonlite::toJSON()
 
@@ -150,6 +212,7 @@ dcount %>%
                   for (var i = 0; i < tips.length; i++) {{
                     $(header[i]).attr('title', tips[i]);
                   }}")),
+                caption = "Counts.",
                 class = "cell-border display compact",
                 extensions = c("Scroller", "KeyTable"),
                 options = list(
@@ -160,7 +223,7 @@ dcount %>%
 ```
 
 
-#### Variant Calling Metrics {.tabset .tabset-fade #qc_vc_metrics_tab}
+#### VarCalling Metrics
 
 ```{r qc_vc_metrics_tab}
 vc_metrics <- read_varcalling_metrics(glue::glue("{res_dir}/{nm}.vc_metrics.csv")) %>%
@@ -176,10 +239,9 @@ vc_metrics <- list(
 )
 ```
 
-##### Counts
-
 ```{r qc_vc_metrics_tab_count}
-dcount <- vc_metrics$count
+dcount <- vc_metrics$count %>%
+  dplyr::select_if(colSums(!is.na(.)) > 0)
 # tab_descr <- mma$var[match(colnames(dcount), mma$var_abbrev)] %>%
 #   jsonlite::toJSON()
 
@@ -191,6 +253,7 @@ dcount %>%
                 #   for (var i = 0; i < tips.length; i++) {{
                 #     $(header[i]).attr('title', tips[i]);
                 #   }}")),
+                caption = "Counts.",
                 class = "cell-border display compact",
                 extensions = c("Scroller", "KeyTable"),
                 options = list(
@@ -200,10 +263,9 @@ dcount %>%
                      currency = "", interval = 3, mark = ",", digits = 0)
 ```
 
-##### Percentages
-
 ```{r qc_vc_metrics_tab_pct}
-dpct <- vc_metrics$pct
+dpct <- vc_metrics$pct %>%
+  dplyr::select_if(colSums(!is.na(.)) > 0)
 # tab_descr <- mma$var[match(colnames(dpct), mma$var_abbrev)] %>%
 #   jsonlite::toJSON()
 
@@ -215,11 +277,11 @@ dpct %>%
                 #   for (var i = 0; i < tips.length; i++) {{
                 #     $(header[i]).attr('title', tips[i]);
                 #   }}")),
+                caption = "Percentages. Bar range: 90-100",
                 class = "cell-border display compact",
-                caption = "Bar range: 90-100",
                 extensions = c("Scroller", "KeyTable"),
                 options = list(
-                  scroller = TRUE, scrollY = 150, scrollX = TRUE,
+                  scroller = TRUE, scrollY = 150,
                   autoWidth = TRUE, keys = TRUE, dom = 'lfrtip')) %>%
   DT::formatStyle(colnames(dpct),
                   background = DT::styleColorBar(c(90, 100), color = "lightblue"),
@@ -227,7 +289,7 @@ dpct %>%
                   backgroundPosition = 'center')
 ```
 
-#### Fragment Length Distribution {#qc_frag_len_distr}
+#### Fragment Length Distribution
 
 ```{r qc_frag_len_distr, fig.height=3.5}
 dracarys::plot_fragment_length_hist(glue::glue("{res_dir}/{nm}.fragment_length_hist.csv"))

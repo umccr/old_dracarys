@@ -11,6 +11,13 @@ read_varcalling_metrics(x)
 }
 \value{
 tibble with the following columns:
+\itemize{
+\item category
+\item sample
+\item var: variable name
+\item count: count value
+\item pct: percent value
+}
 }
 \description{
 Reads the \code{vc_metrics.csv} file, which contains variant calling metrics.
