@@ -152,7 +152,20 @@ cov_metrics_pct %>%
                   keys = TRUE, dom = 'lfrtip'))
 ```
 
-#### Cov Plots
+#### Coverage Plots
+
+#### Ploidy Estimation
+
+```{r qc_ploidy_estimation_tab}
+ploidy_estimation <- dracarys::read_ploidy_estimation_metrics(glue::glue("{res_dir}/{nm}.ploidy_estimation_metrics.csv"))
+ploidy_estimation %>%
+knitr::kable(format = "html", col.names = NULL) %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "left",
+                            bootstrap_options = c("striped", "bordered",
+                                                  "condensed", "hover")) %>%
+  kableExtra::column_spec(1, bold = TRUE)
+
+```
 
 #### Mapping Metrics
 
