@@ -32,10 +32,10 @@ read_fragment_length_hist <- function(x) {
 
 #' Plot Fragment Length Distribution
 #'
-#' Plots the insert length distributions as written in the `fragment_length_hist.csv` file.
+#' Plots the fragment length distributions as written in the `fragment_length_hist.csv` file.
 #'
 #' @param x Path to `fragment_length_hist.csv` file.
-#' @param colours Colours for normal and tumor sample, in that order.
+#' @param colours Colours for tumor and normal samples (alphanumerically sorted).
 #' @param min_count Minimum read count to be plotted (Default: 10).
 #' @return A ggplot2 plot containing insert lengths on X axis and read counts
 #'   on Y axis for each sample.
@@ -51,11 +51,14 @@ plot_fragment_length_hist <- function(x, colours = c("#009E73", "#D55E00"), min_
     ggplot2::ggplot(ggplot2::aes(x = .data$fragmentLength, y = .data$count, colour = sample)) +
     ggplot2::geom_line() +
     ggplot2::scale_colour_manual(values = colours) +
-    ggplot2::xlab("Insert Length (bp)") +
+    ggplot2::labs(title = "Fragment Length Distribution") +
+    ggplot2::xlab("Fragment Length (bp)") +
     ggplot2::ylab(glue::glue("Read Count (min: {min_count})")) +
     ggplot2::theme_minimal() +
-    ggplot2::theme(legend.position = c(0.9, 0.9),
-                   legend.justification = c(1, 1),
-                   panel.grid.minor = ggplot2::element_blank(),
-                   panel.grid.major = ggplot2::element_blank())
+    ggplot2::theme(
+      legend.position = c(0.9, 0.9),
+      legend.justification = c(1, 1),
+      panel.grid.minor = ggplot2::element_blank(),
+      panel.grid.major = ggplot2::element_blank(),
+      plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"))
 }

@@ -131,14 +131,15 @@ plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#009E73", "#D55
     ggplot2::geom_line() +
     ggplot2::scale_colour_manual(values = colours) +
     ggplot2::theme_minimal() +
-    ggplot2::labs(colour = "Phenotype") +
+    ggplot2::labs(title = "Mean Coverage Per Chromosome", colour = "Phenotype") +
     ggplot2::xlab("Chromosome") +
     ggplot2::ylab("Coverage") +
     ggplot2::theme(
       legend.position = "top",
       panel.grid.minor = ggplot2::element_blank(),
       panel.grid.major.y = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1))
+      axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1),
+      plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"))
 }
 
 #' Read WGS Fine Hist File
