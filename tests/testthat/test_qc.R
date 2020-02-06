@@ -8,6 +8,7 @@ tm <- read_time_metrics(system.file("extdata/COLO829.time_metrics.csv.gz", packa
 vm <- read_varcalling_metrics(system.file("extdata/COLO829.vc_metrics.csv.gz", package = "dracarys"))
 replay <- read_replay(system.file("extdata/COLO829-replay.json.gz", package = "dracarys"))
 ploidy_metrics <- read_ploidy_estimation_metrics(system.file("extdata/COLO829.ploidy_estimation_metrics.csv.gz", package = "dracarys"))
+cov_contig <- read_wgs_contig_coverage(system.file("extdata/COLO829.wgs_contig_mean_cov_tumor.csv.gz", package = "dracarys"), phenotype = "tumor")
 
 
 test_that("column names are correct", {
@@ -18,4 +19,5 @@ test_that("column names are correct", {
   expect_equal(colnames(vm), c("category", "sample", "var", "count", "pct"))
   expect_equal(names(replay), c("command_line", "dragen_config", "inputs", "system"))
   expect_equal(colnames(ploidy_metrics), c("var", "value"))
+  expect_equal(colnames(cov_contig), c("phenotype", "chrom", "n_bases", "coverage"))
 })
