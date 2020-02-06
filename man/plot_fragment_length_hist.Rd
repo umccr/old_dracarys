@@ -4,10 +4,13 @@
 \alias{plot_fragment_length_hist}
 \title{Plot Fragment Length Distribution}
 \usage{
-plot_fragment_length_hist(x, min_count = 10)
+plot_fragment_length_hist(x, colours = c("#009E73", "#D55E00"),
+  min_count = 10)
 }
 \arguments{
 \item{x}{Path to \code{fragment_length_hist.csv} file.}
+
+\item{colours}{Colours for normal and tumor sample, in that order.}
 
 \item{min_count}{Minimum read count to be plotted (Default: 10).}
 }
@@ -20,5 +23,5 @@ Plots the insert length distributions as written in the \code{fragment_length_hi
 }
 \examples{
 x <- system.file("extdata/Colo829.fragment_length_hist.csv.gz", package = "dracarys")
-p <- plot_fragment_length_hist(x, min_count = 10)
+plot_fragment_length_hist(x, min_count = 10)
 }

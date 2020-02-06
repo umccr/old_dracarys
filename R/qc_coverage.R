@@ -129,8 +129,8 @@ plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#009E73", "#D55
     ggplot2::ggplot(ggplot2::aes(x = .data$chrom, y = .data$coverage,
                                  colour = .data$phenotype, group = .data$phenotype)) +
     ggplot2::geom_line() +
-    ggplot2::theme_minimal() +
     ggplot2::scale_colour_manual(values = colours) +
+    ggplot2::theme_minimal() +
     ggplot2::labs(colour = "Phenotype") +
     ggplot2::xlab("Chromosome") +
     ggplot2::ylab("Coverage") +

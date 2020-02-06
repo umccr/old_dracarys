@@ -8,11 +8,11 @@ plot_wgs_contig_coverage(tumor, normal, colours = c("#009E73",
   "#D55E00"))
 }
 \arguments{
-\item{colours}{Colours for tumor and normal sample.}
+\item{tumor}{Path to \code{wgs_contig_mean_cov_tumor.csv} file.}
 
-\item{x}{Path to \code{wgs_contig_mean_cov_<phenotype_A>.csv} file.}
+\item{normal}{Path to \code{wgs_contig_mean_cov_normal.csv} file.}
 
-\item{y}{Path to \code{wgs_contig_mean_cov_<phenotype_B>.csv} file.}
+\item{colours}{Colours for normal and tumor sample, in that order.}
 }
 \value{
 A ggplot2 object with chromosomes on X axis, and coverage on Y axis.
