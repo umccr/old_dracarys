@@ -95,6 +95,14 @@ cov_contig_tumor <- glue::glue("{res_dir}/{nm}.wgs_contig_mean_cov_{lab_tumor}.c
 plot_wgs_contig_coverage(tumor = cov_contig_tumor, normal = cov_contig_normal)
 ```
 
+```{r qc_cov_wgs_fine_hist, fig.height=3.5}
+cov_fine_normal <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_normal}.csv")
+cov_fine_tumor <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_tumor}.csv")
+plot_wgs_fine_hist(tumor = cov_fine_tumor, normal = cov_fine_normal)
+```
+
+
+
 #### Coverage Metrics
 ```{r qc_cov_metrics}
 cov_metrics_tumor <-
