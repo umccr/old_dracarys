@@ -92,7 +92,7 @@ read_wgs_contig_coverage <- function(x, phenotype, keep_alt = FALSE) {
   readr::read_csv(x, col_names = c("chrom", "n_bases", "coverage"), col_types = "cdd") %>%
     dplyr::filter(
       if (!keep_alt) {
-        !grepl("chrM|MT|_|Autosomal", .data$chrom)
+        !grepl("chrM|MT|_|Autosomal|HLA-", .data$chrom)
       } else {
         TRUE
       }) %>%
@@ -130,6 +130,7 @@ plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#56B4E9", "#D55
                                  colour = .data$phenotype, group = .data$phenotype)) +
     ggplot2::geom_line() +
     ggplot2::scale_colour_manual(values = colours) +
+    ggplot2::scale_y_continuous(limits = c(0, NA), expand = c(0, 0)) +
     ggplot2::theme_minimal() +
     ggplot2::labs(title = "Mean Coverage Per Chromosome", colour = "Phenotype") +
     ggplot2::xlab("Chromosome") +
