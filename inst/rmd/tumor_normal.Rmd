@@ -36,8 +36,8 @@ knitr::opts_chunk$set(
 params <- function(x) {
   paths <- list(
     local = list(
-      res_dir = here::here("nogit/COLO829"),
-      nm = "COLO829")
+      res_dir = here::here("nogit/SBJ00238"),
+      nm = "SBJ00238")
   )
   paths[[x]]
 }
@@ -68,8 +68,16 @@ nm <- params$nm
 res_dir <- params$res_dir
 lab_tumor <- "tumor"
 lab_normal <- "normal"
-```
 
+replay <- glue::glue("{res_dir}/{nm}-replay.json") %>% dracarys::read_replay()
+dragen_config <- replay$dragen_config
+eval_steps <- list(
+  run_sv = dplyr::filter(replay$dragen_config, grepl("^enable-sv$", name)) %>%
+    dplyr::pull(value) %>% toupper() %>% as.logical(),
+  run_varcall = dplyr::filter(replay$dragen_config, grepl("^enable-variant-caller$", name)) %>%
+    dplyr::pull(value) %>% toupper() %>% as.logical()
+)
+```
 
 ### QC {.tabset .tabset-fade #qc}
 
@@ -100,8 +108,6 @@ cov_fine_normal <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_normal}.csv")
 cov_fine_tumor <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_tumor}.csv")
 plot_wgs_fine_hist(tumor = cov_fine_tumor, normal = cov_fine_normal)
 ```
-
-
 
 #### Coverage Metrics
 ```{r qc_cov_metrics}
@@ -243,7 +249,7 @@ dcount %>%
 
 
 #### VarCalling Metrics
-```{r qc_vc_metrics_tab}
+```{r qc_vc_metrics_tab, eval=eval_steps$run_varcall}
 vc_metrics <- read_varcalling_metrics(glue::glue("{res_dir}/{nm}.vc_metrics.csv")) %>%
   dplyr::filter(category != "summary")
 vc_metrics <- list(
@@ -257,7 +263,7 @@ vc_metrics <- list(
 )
 ```
 
-```{r qc_vc_metrics_tab_count}
+```{r qc_vc_metrics_tab_count, eval=eval_steps$run_varcall}
 dcount <- vc_metrics$count %>%
   dplyr::select_if(colSums(!is.na(.)) > 0)
 # tab_descr <- mma$var[match(colnames(dcount), mma$var_abbrev)] %>%
@@ -281,7 +287,7 @@ dcount %>%
                      currency = "", interval = 3, mark = ",", digits = 0)
 ```
 
-```{r qc_vc_metrics_tab_pct}
+```{r qc_vc_metrics_tab_pct, eval=eval_steps$run_varcall}
 dpct <- vc_metrics$pct %>%
   dplyr::select_if(colSums(!is.na(.)) > 0)
 # tab_descr <- mma$var[match(colnames(dpct), mma$var_abbrev)] %>%
@@ -315,10 +321,6 @@ dracarys::plot_fragment_length_hist(glue::glue("{res_dir}/{nm}.fragment_length_h
 ## Addendum {.tabset .tabset-fade #addendum}
 
 ### DRAGEN {.tabset .tabset-fade}
-```{r dragen_read_replay}
-replay <- glue::glue("{res_dir}/{nm}-replay.json") %>%
-  dracarys::read_replay()
-```
 
 #### Version
 ```{r dragen_replay_system}
