@@ -4,7 +4,7 @@
 \alias{plot_wgs_contig_coverage}
 \title{Plot WGS Contig Mean Coverage Files}
 \usage{
-plot_wgs_contig_coverage(tumor, normal, colours = c("#009E73",
+plot_wgs_contig_coverage(tumor, normal, colours = c("#56B4E9",
   "#D55E00"))
 }
 \arguments{

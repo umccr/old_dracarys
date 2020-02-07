@@ -4,7 +4,7 @@
 \alias{plot_fragment_length_hist}
 \title{Plot Fragment Length Distribution}
 \usage{
-plot_fragment_length_hist(x, colours = c("#009E73", "#D55E00"),
+plot_fragment_length_hist(x, colours = c("#56B4E9", "#D55E00"),
   min_count = 10)
 }
 \arguments{

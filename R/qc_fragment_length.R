@@ -44,7 +44,7 @@ read_fragment_length_hist <- function(x) {
 #' x <- system.file("extdata/Colo829.fragment_length_hist.csv.gz", package = "dracarys")
 #' plot_fragment_length_hist(x, min_count = 10)
 #' @export
-plot_fragment_length_hist <- function(x, colours = c("#009E73", "#D55E00"), min_count = 10) {
+plot_fragment_length_hist <- function(x, colours = c("#56B4E9", "#D55E00"), min_count = 10) {
   assertthat::assert_that(is.numeric(min_count), min_count >= 0, length(colours) == 2)
   read_fragment_length_hist(x) %>%
     dplyr::filter(.data$count >= min_count) %>%

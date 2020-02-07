@@ -116,7 +116,7 @@ read_wgs_contig_coverage <- function(x, phenotype, keep_alt = FALSE) {
 #'
 #' plot_wgs_contig_coverage(tumor = tumor, normal = normal)
 #' @export
-plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#009E73", "#D55E00")) {
+plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#56B4E9", "#D55E00")) {
   assertthat::assert_that(length(colours) == 2)
   cov_contig_normal <- dracarys::read_wgs_contig_coverage(normal, phenotype = "normal")
   cov_contig_tumor <- dracarys::read_wgs_contig_coverage(tumor, phenotype = "tumor")
@@ -150,17 +150,71 @@ plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#009E73", "#D55
 #' column indicates the number of loci covered at the corresponding depth.
 #'
 #' @param x Path to `wgs_fine_hist_<phenotype>.csv` file.
-#' @param label Label for the file e.g. 'tumor' or 'normal'.
-#' @return tibble with following columns:
+#' @param phenotype Phenotype of file e.g. 'tumor', 'normal'.
+#' @return tibble with two columns:
+#'   - Depth
+#'   - Overall
 #'
 #' @examples
-#' x <- system.file("extdata/COLO829.wgs_coverage_metrics_normal.csv.gz", package = "dracarys")
-#' y <- system.file("extdata/COLO829.wgs_coverage_metrics_tumor.csv.gz", package = "dracarys")
+#' x <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
+#' y <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
 #'
-#' read_wgs_coverage_metrics(x, label = "normal")
-#' read_wgs_coverage_metrics(y, label = "tumor")
+#' read_wgs_fine_hist(x, phenotype = "normal")
+#' read_wgs_fine_hist(x, phenotype = "tumor")
 #' @export
-read_wgs_fine_hist <- function(x, label) {
-  d <- readr::read_lines(x)
-  assertthat::assert_that(grepl("COVERAGE SUMMARY", d[1]))
+read_wgs_fine_hist <- function(x, phenotype) {
+  d <- readr::read_csv(x, col_types = "cd")
+  assertthat::assert_that(all(colnames(d) == c("Depth", "Overall")))
+
+  d %>%
+    dplyr::mutate(phenotype = phenotype,
+                  Depth = ifelse(grepl("1000+", .data$Depth), 1000, .data$Depth),
+                  Depth = as.integer(.data$Depth)) %>%
+    dplyr::select(.data$phenotype, depth = .data$Depth, n_loci = .data$Overall)
+}
+
+
+#' Plot WGS Fine Hist File
+#'
+#' Plots the `wgs_fine_hist_<phenotype>.csv` files for tumor and normal.
+#'
+#' @param tumor Path to `wgs_fine_hist_tumor.csv` file.
+#' @param normal Path to `wgs_fine_hist_normal.csv` file.
+#' @param colours Colours for normal and tumor sample, in that order.
+#' @param x_lim X axis range to plot.
+#'
+#' @return A ggplot2 object with depth of coverage on X axis, and number of loci with
+#'   that depth on Y axis.
+#'
+#' @examples
+#' normal <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
+#' tumor <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
+#'
+#' plot_wgs_fine_hist(tumor = tumor, normal = normal)
+#' plot_wgs_fine_hist(tumor = tumor, normal = normal, x_lim = c(0, 500))
+#' @export
+plot_wgs_fine_hist <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"), x_lim = c(0, 300)) {
+  assertthat::assert_that(length(colours) == 2, length(x_lim) == 2)
+  norm <- read_wgs_fine_hist(normal, phenotype = "normal")
+  tum <- read_wgs_fine_hist(tumor, phenotype = "tumor")
+  cov <- dplyr::bind_rows(norm, tum)
+
+  cov %>%
+    ggplot2::ggplot(ggplot2::aes(x = .data$depth, y = .data$n_loci,
+                                 colour = .data$phenotype, group = .data$phenotype)) +
+    ggplot2::geom_line() +
+    ggplot2::coord_cartesian(xlim = x_lim) +
+    ggplot2::scale_colour_manual(values = colours) +
+    ggplot2::scale_y_continuous(labels = scales::comma) +
+    ggplot2::theme_minimal() +
+    ggplot2::labs(title = "Coverage Distribution", colour = "Phenotype") +
+    ggplot2::xlab("Depth of Coverage") +
+    ggplot2::ylab("Number of Loci with Given Coverage") +
+    ggplot2::theme(
+      legend.position = c(0.9, 0.9),
+      legend.justification = c(1, 1),
+      panel.grid.minor = ggplot2::element_blank(),
+      panel.grid.major = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1),
+      plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"))
 }
