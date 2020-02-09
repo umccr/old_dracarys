@@ -105,6 +105,7 @@ plot_wgs_contig_coverage(tumor = cov_contig_tumor, normal = cov_contig_normal)
 cov_fine_normal <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_normal}.csv")
 cov_fine_tumor <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_tumor}.csv")
 plot_wgs_fine_hist(tumor = cov_fine_tumor, normal = cov_fine_normal)
+plot_wgs_fine_cumsum(tumor = cov_fine_tumor, normal = cov_fine_normal, x_lim = c(0, 200))
 ```
 
 #### Coverage Metrics
