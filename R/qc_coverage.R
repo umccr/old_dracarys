@@ -107,6 +107,7 @@ read_wgs_contig_coverage <- function(x, phenotype, keep_alt = FALSE) {
 #' @param tumor Path to `wgs_contig_mean_cov_tumor.csv` file.
 #' @param normal Path to `wgs_contig_mean_cov_normal.csv` file.
 #' @param colours Colours for normal and tumor sample, in that order.
+#' @param top_alt_n Number of top covered alt contigs to plot per phenotype.
 #'
 #' @return A ggplot2 object with chromosomes on X axis, and coverage on Y axis.
 #'
@@ -116,21 +117,65 @@ read_wgs_contig_coverage <- function(x, phenotype, keep_alt = FALSE) {
 #'
 #' plot_wgs_contig_coverage(tumor = tumor, normal = normal)
 #' @export
-plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#56B4E9", "#D55E00")) {
-  assertthat::assert_that(length(colours) == 2)
-  cov_contig_normal <- dracarys::read_wgs_contig_coverage(normal, phenotype = "normal")
-  cov_contig_tumor <- dracarys::read_wgs_contig_coverage(tumor, phenotype = "tumor")
+plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"), top_alt_n = 15) {
+  assertthat::assert_that(length(colours) == 2,
+                          length(top_alt_n) == 1, top_alt_n >= 0, is.numeric(top_alt_n))
+  cov_contig_normal <-
+    dracarys::read_wgs_contig_coverage(normal, phenotype = "normal", keep_alt = TRUE)
+  cov_contig_tumor <-
+    dracarys::read_wgs_contig_coverage(tumor, phenotype = "tumor", keep_alt = TRUE)
 
   cov_contig <- dplyr::bind_rows(cov_contig_normal, cov_contig_tumor)
-  chrom_order <- gtools::mixedsort(unique(cov_contig$chrom))
 
-  cov_contig %>%
-    dplyr::mutate(chrom = factor(.data$chrom, levels = chrom_order)) %>%
-    ggplot2::ggplot(ggplot2::aes(x = .data$chrom, y = .data$coverage,
-                                 colour = .data$phenotype, group = .data$phenotype)) +
+  # Display chr1-22, X, Y at top (M goes to bottom).
+  # Display top 20 of the rest, plus rest as 'other', at bottom
+  main_chrom1 <- c(1:22, "X", "Y")
+  main_chrom2 <- c(paste0("chr", main_chrom1))
+  main_chrom <- c(main_chrom1, main_chrom2, "Autosomal regions")
+
+  cov_contig <- cov_contig %>%
+    dplyr::mutate(panel = ifelse(.data$chrom %in% main_chrom, "main", "alt"),
+                  panel = factor(.data$panel, levels = c("main", "alt")))
+
+  main_panel <- cov_contig %>%
+    dplyr::filter(.data$panel == "main") %>%
+    dplyr::select(.data$phenotype, .data$chrom, .data$coverage, .data$panel)
+  alt_panel <- cov_contig %>%
+    dplyr::filter(.data$panel == "alt") %>%
+    dplyr::select(.data$phenotype, .data$chrom, .data$coverage, .data$panel)
+
+  top_alt <- alt_panel %>%
+    dplyr::group_by(.data$phenotype) %>%
+    dplyr::top_n(top_alt_n, wt = .data$coverage) %>%
+    dplyr::arrange(dplyr::desc(.data$coverage)) %>%
+    dplyr::pull(.data$chrom) %>%
+    unique()
+
+  alt_panel2 <- alt_panel %>%
+    dplyr::mutate(alt_group = ifelse(.data$chrom %in% top_alt, "top", "bottom"))
+
+  alt_panel_final <- alt_panel2 %>%
+    dplyr::group_by(.data$alt_group, .data$phenotype) %>%
+    dplyr::summarise(mean_cov = mean(.data$coverage)) %>%
+    dplyr::inner_join(alt_panel2, by = c("alt_group", "phenotype")) %>%
+    dplyr::mutate(
+      chrom = ifelse(.data$alt_group == "bottom", "OTHER", .data$chrom),
+      coverage = ifelse(.data$alt_group == "bottom", .data$mean_cov, .data$coverage)) %>%
+    dplyr::distinct() %>%
+    dplyr::ungroup() %>%
+    dplyr::select(.data$phenotype, .data$chrom, .data$coverage, .data$panel)
+
+  chrom_fac_levels <- c(main_chrom, "chrM", "MT", top_alt[!top_alt %in% c("chrM", "MT")], "OTHER")
+  d <- dplyr::bind_rows(main_panel, alt_panel_final) %>%
+    dplyr::mutate(chrom = factor(.data$chrom, levels = chrom_fac_levels))
+
+  d %>%
+    ggplot2::ggplot(
+      ggplot2::aes(x = .data$chrom, y = .data$coverage,
+                   colour = .data$phenotype, group = .data$phenotype)) +
     ggplot2::geom_line() +
     ggplot2::scale_colour_manual(values = colours) +
-    ggplot2::scale_y_continuous(limits = c(0, NA), expand = c(0, 0)) +
+    ggplot2::scale_y_continuous(limits = c(0, NA), expand = c(0, 0), labels = scales::comma) +
     ggplot2::theme_minimal() +
     ggplot2::labs(title = "Mean Coverage Per Chromosome", colour = "Phenotype") +
     ggplot2::xlab("Chromosome") +
@@ -139,8 +184,12 @@ plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#56B4E9", "#D55
       legend.position = "top",
       panel.grid.minor = ggplot2::element_blank(),
       panel.grid.major.y = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1),
-      plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"))
+      strip.background = ggplot2::element_blank(),
+      strip.text.x = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1, size = 6),
+      plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"),
+      panel.spacing = ggplot2::unit(2, "lines")) +
+    ggplot2::facet_wrap(ggplot2::vars(.data$panel), nrow = 2, scales = "free")
 }
 
 #' Read WGS Fine Hist File
@@ -218,4 +267,25 @@ plot_wgs_fine_hist <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"),
       panel.grid.major = ggplot2::element_blank(),
       axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1),
       plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"))
+}
+
+#' Plot WGS Fine Hist File Cumsum
+#'
+#' Plots the `wgs_fine_hist_<phenotype>.csv` cumsum.
+#'
+#' @param tumor Path to `wgs_fine_hist_tumor.csv` file.
+#' @param normal Path to `wgs_fine_hist_normal.csv` file.
+#' @param colours Colours for normal and tumor sample, in that order.
+#'
+#' @return A ggplot2 object with depth of coverage on X axis, and percentage
+#'   of loci with that depth on Y axis.
+#'
+#' @examples
+#' normal <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
+#' tumor <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
+#'
+#' plot_wgs_fine_hist(tumor = tumor, normal = normal)
+#' plot_wgs_fine_hist(tumor = tumor, normal = normal, x_lim = c(0, 500))
+#' @export
+plot_wgs_fine_cumsum <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"), x_lim = c(0, 300)) {
 }

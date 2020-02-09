@@ -72,9 +72,9 @@ lab_normal <- "normal"
 replay <- glue::glue("{res_dir}/{nm}-replay.json") %>% dracarys::read_replay()
 dragen_config <- replay$dragen_config
 eval_steps <- list(
-  run_sv = dplyr::filter(replay$dragen_config, grepl("^enable-sv$", name)) %>%
+  sv = dplyr::filter(replay$dragen_config, grepl("^enable-sv$", name)) %>%
     dplyr::pull(value) %>% toupper() %>% as.logical(),
-  run_varcall = dplyr::filter(replay$dragen_config, grepl("^enable-variant-caller$", name)) %>%
+  varcall = dplyr::filter(replay$dragen_config, grepl("^enable-variant-caller$", name)) %>%
     dplyr::pull(value) %>% toupper() %>% as.logical()
 )
 ```
@@ -97,13 +97,11 @@ time_metrics %>%
 ```
 
 #### Coverage Plots
-```{r qc_cov_contig_plot, fig.height=3.5}
+```{r qc_cov_contig_plot, fig.height=7, fig.show='hold'}
 cov_contig_normal <- glue::glue("{res_dir}/{nm}.wgs_contig_mean_cov_{lab_normal}.csv")
 cov_contig_tumor <- glue::glue("{res_dir}/{nm}.wgs_contig_mean_cov_{lab_tumor}.csv")
 plot_wgs_contig_coverage(tumor = cov_contig_tumor, normal = cov_contig_normal)
-```
 
-```{r qc_cov_wgs_fine_hist, fig.height=3.5}
 cov_fine_normal <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_normal}.csv")
 cov_fine_tumor <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_tumor}.csv")
 plot_wgs_fine_hist(tumor = cov_fine_tumor, normal = cov_fine_normal)
@@ -249,7 +247,7 @@ dcount %>%
 
 
 #### VarCalling Metrics
-```{r qc_vc_metrics_tab, eval=eval_steps$run_varcall}
+```{r qc_vc_metrics_tab, eval=eval_steps$varcall}
 vc_metrics <- read_varcalling_metrics(glue::glue("{res_dir}/{nm}.vc_metrics.csv")) %>%
   dplyr::filter(category != "summary")
 vc_metrics <- list(
@@ -263,7 +261,7 @@ vc_metrics <- list(
 )
 ```
 
-```{r qc_vc_metrics_tab_count, eval=eval_steps$run_varcall}
+```{r qc_vc_metrics_tab_count, eval=eval_steps$varcall}
 dcount <- vc_metrics$count %>%
   dplyr::select_if(colSums(!is.na(.)) > 0)
 # tab_descr <- mma$var[match(colnames(dcount), mma$var_abbrev)] %>%
@@ -287,7 +285,7 @@ dcount %>%
                      currency = "", interval = 3, mark = ",", digits = 0)
 ```
 
-```{r qc_vc_metrics_tab_pct, eval=eval_steps$run_varcall}
+```{r qc_vc_metrics_tab_pct, eval=eval_steps$varcall}
 dpct <- vc_metrics$pct %>%
   dplyr::select_if(colSums(!is.na(.)) > 0)
 # tab_descr <- mma$var[match(colnames(dpct), mma$var_abbrev)] %>%

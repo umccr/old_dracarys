@@ -5,7 +5,7 @@
 \title{Plot WGS Contig Mean Coverage Files}
 \usage{
 plot_wgs_contig_coverage(tumor, normal, colours = c("#56B4E9",
-  "#D55E00"))
+  "#D55E00"), top_alt_n = 15)
 }
 \arguments{
 \item{tumor}{Path to \code{wgs_contig_mean_cov_tumor.csv} file.}
@@ -13,6 +13,8 @@ plot_wgs_contig_coverage(tumor, normal, colours = c("#56B4E9",
 \item{normal}{Path to \code{wgs_contig_mean_cov_normal.csv} file.}
 
 \item{colours}{Colours for normal and tumor sample, in that order.}
+
+\item{top_alt_n}{Number of top covered alt contigs to plot per phenotype.}
 }
 \value{
 A ggplot2 object with chromosomes on X axis, and coverage on Y axis.
