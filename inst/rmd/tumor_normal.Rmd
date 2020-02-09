@@ -58,6 +58,7 @@ suppressPackageStartupMessages(library(DT))
 suppressPackageStartupMessages(library(glue))
 suppressPackageStartupMessages(library(jsonlite))
 suppressPackageStartupMessages(library(kableExtra))
+suppressPackageStartupMessages(library(patchwork))
 suppressPackageStartupMessages(library(purrr))
 suppressPackageStartupMessages(library(readr))
 suppressPackageStartupMessages(library(tidyr))
@@ -97,15 +98,17 @@ time_metrics %>%
 ```
 
 #### Coverage Plots
-```{r qc_cov_contig_plot, fig.height=7, fig.show='hold'}
+```{r qc_cov_contig_plot, fig.width=14, fig.height=10}
 cov_contig_normal <- glue::glue("{res_dir}/{nm}.wgs_contig_mean_cov_{lab_normal}.csv")
 cov_contig_tumor <- glue::glue("{res_dir}/{nm}.wgs_contig_mean_cov_{lab_tumor}.csv")
-plot_wgs_contig_coverage(tumor = cov_contig_tumor, normal = cov_contig_normal)
-
 cov_fine_normal <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_normal}.csv")
 cov_fine_tumor <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_tumor}.csv")
-plot_wgs_fine_hist(tumor = cov_fine_tumor, normal = cov_fine_normal)
-plot_wgs_fine_cumsum(tumor = cov_fine_tumor, normal = cov_fine_normal, x_lim = c(0, 200))
+
+fine_hist <- plot_wgs_fine_hist(tumor = cov_fine_tumor, normal = cov_fine_normal)
+fine_cumsum <- plot_wgs_fine_cumsum(tumor = cov_fine_tumor, normal = cov_fine_normal)
+contig_cov <- plot_wgs_contig_coverage(tumor = cov_contig_tumor, normal = cov_contig_normal)
+
+(fine_hist / fine_cumsum) | contig_cov
 ```
 
 #### Coverage Metrics

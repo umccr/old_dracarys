@@ -17,7 +17,7 @@ plot_wgs_fine_cumsum(tumor, normal, colours = c("#56B4E9", "#D55E00"),
 \item{y_lim}{Y axis lower limit.}
 }
 \value{
-A ggplot2 object with depth of coverage on X axis, and percentage
+A ggplot2 object with depth of coverage on X axis, and fraction
 of loci with that depth on Y axis.
 }
 \description{

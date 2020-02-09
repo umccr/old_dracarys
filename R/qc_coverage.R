@@ -175,7 +175,9 @@ plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#56B4E9", "#D55
                    colour = .data$phenotype, group = .data$phenotype)) +
     ggplot2::geom_line() +
     ggplot2::scale_colour_manual(values = colours) +
-    ggplot2::scale_y_continuous(limits = c(0, NA), expand = c(0, 0), labels = scales::comma) +
+    ggplot2::scale_y_continuous(
+      limits = c(0, NA), expand = c(0, 0), labels = scales::comma,
+      breaks = scales::pretty_breaks(n = 8)) +
     ggplot2::theme_minimal() +
     ggplot2::labs(title = "Mean Coverage Per Chromosome", colour = "Phenotype") +
     ggplot2::xlab("Chromosome") +
@@ -256,6 +258,7 @@ plot_wgs_fine_hist <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"),
     ggplot2::coord_cartesian(xlim = x_lim) +
     ggplot2::scale_colour_manual(values = colours) +
     ggplot2::scale_y_continuous(labels = scales::comma) +
+    ggplot2::scale_x_continuous(breaks = scales::pretty_breaks(n = 8)) +
     ggplot2::theme_minimal() +
     ggplot2::labs(title = "Coverage Distribution", colour = "Phenotype") +
     ggplot2::xlab("Depth of Coverage") +
@@ -264,8 +267,8 @@ plot_wgs_fine_hist <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"),
       legend.position = c(0.9, 0.9),
       legend.justification = c(1, 1),
       panel.grid.minor = ggplot2::element_blank(),
-      panel.grid.major = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1),
+      # panel.grid.major = ggplot2::element_blank(),
+      # axis.text.x = ggplot2::element_text(angle = 0, vjust = 1, hjust = 1),
       plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"))
 }
 
@@ -279,7 +282,7 @@ plot_wgs_fine_hist <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"),
 #' @param colours Colours for normal and tumor sample, in that order.
 #' @param y_lim Y axis lower limit.
 #'
-#' @return A ggplot2 object with depth of coverage on X axis, and percentage
+#' @return A ggplot2 object with depth of coverage on X axis, and fraction
 #'   of loci with that depth on Y axis.
 #'
 #' @examples
@@ -306,8 +309,9 @@ plot_wgs_fine_cumsum <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"
       ggplot2::aes(x = .data$depth, y = .data$cumsum, colour = .data$phenotype)) +
     ggplot2::geom_line() +
     ggplot2::scale_colour_manual(values = colours) +
+    ggplot2::scale_x_continuous(breaks = scales::pretty_breaks(n = 8)) +
     ggplot2::theme_minimal() +
-    ggplot2::labs(title = "Coverage Distribution", colour = "Phenotype") +
+    ggplot2::labs(title = "Cumulative Coverage", colour = "Phenotype") +
     ggplot2::xlab("Depth of Coverage") +
     ggplot2::ylab("Fraction of Loci with >= Given Coverage") +
     ggplot2::theme(
@@ -316,8 +320,4 @@ plot_wgs_fine_cumsum <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"
       panel.grid.minor = ggplot2::element_blank(),
       axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1),
       plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"))
-
-
-
-
 }
