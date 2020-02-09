@@ -3,6 +3,7 @@
 export("%>%")
 export(plot_fragment_length_hist)
 export(plot_wgs_contig_coverage)
+export(plot_wgs_fine_cumsum)
 export(plot_wgs_fine_hist)
 export(read_fragment_length_hist)
 export(read_mapping_metrics)

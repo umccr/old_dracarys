@@ -269,13 +269,15 @@ plot_wgs_fine_hist <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"),
       plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"))
 }
 
+
 #' Plot WGS Fine Hist File Cumsum
 #'
-#' Plots the `wgs_fine_hist_<phenotype>.csv` cumsum.
+#' Plots the `wgs_fine_hist_<phenotype>.csv` coverage cumsum.
 #'
 #' @param tumor Path to `wgs_fine_hist_tumor.csv` file.
 #' @param normal Path to `wgs_fine_hist_normal.csv` file.
 #' @param colours Colours for normal and tumor sample, in that order.
+#' @param y_lim Y axis lower limit.
 #'
 #' @return A ggplot2 object with depth of coverage on X axis, and percentage
 #'   of loci with that depth on Y axis.
@@ -284,8 +286,38 @@ plot_wgs_fine_hist <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"),
 #' normal <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
 #' tumor <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
 #'
-#' plot_wgs_fine_hist(tumor = tumor, normal = normal)
-#' plot_wgs_fine_hist(tumor = tumor, normal = normal, x_lim = c(0, 500))
+#' plot_wgs_fine_cumsum(tumor = tumor, normal = normal)
 #' @export
-plot_wgs_fine_cumsum <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"), x_lim = c(0, 300)) {
+plot_wgs_fine_cumsum <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"), y_lim = 0.003) {
+  assertthat::assert_that(length(colours) == 2, length(y_lim) == 1)
+  norm <- read_wgs_fine_hist(normal, phenotype = "normal")
+  tum <- read_wgs_fine_hist(tumor, phenotype = "tumor")
+  cov <-
+    dplyr::bind_rows(norm, tum) %>%
+    dplyr::group_by(.data$phenotype) %>%
+    dplyr::mutate(freq = .data$n_loci / sum(.data$n_loci)) %>%
+    dplyr::arrange(dplyr::desc(.data$depth)) %>%
+    dplyr::mutate(cumsum = cumsum(.data$freq)) %>%
+    dplyr::filter(.data$cumsum >= y_lim) %>%
+    dplyr::ungroup()
+
+  cov %>%
+    ggplot2::ggplot(
+      ggplot2::aes(x = .data$depth, y = .data$cumsum, colour = .data$phenotype)) +
+    ggplot2::geom_line() +
+    ggplot2::scale_colour_manual(values = colours) +
+    ggplot2::theme_minimal() +
+    ggplot2::labs(title = "Coverage Distribution", colour = "Phenotype") +
+    ggplot2::xlab("Depth of Coverage") +
+    ggplot2::ylab("Fraction of Loci with >= Given Coverage") +
+    ggplot2::theme(
+      legend.position = c(0.9, 0.9),
+      legend.justification = c(1, 1),
+      panel.grid.minor = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1),
+      plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"))
+
+
+
+
 }
