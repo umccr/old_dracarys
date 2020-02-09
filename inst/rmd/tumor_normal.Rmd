@@ -80,22 +80,7 @@ eval_steps <- list(
 )
 ```
 
-### QC {.tabset .tabset-fade #qc}
-
-#### Timing
-```{r qc_time_metrics}
-time_metrics <- glue::glue("{res_dir}/{nm}.time_metrics.csv") %>%
-  dracarys::read_time_metrics()
-
-time_metrics %>%
-  knitr::kable(format = "html", col.names = NULL) %>%
-  kableExtra::kable_styling(full_width = FALSE, position = "left",
-                            bootstrap_options = c("striped", "bordered",
-                                                  "condensed", "hover")) %>%
-  kableExtra::column_spec(1, bold = TRUE) %>%
-  kableExtra::row_spec(nrow(time_metrics), bold = T,
-                       color = "white", background = "#2c3e50")
-```
+### QC {.tabset .tabset-fade}
 
 #### Coverage Plots
 ```{r qc_cov_contig_plot, fig.width=14, fig.height=10}
@@ -111,7 +96,38 @@ contig_cov <- plot_wgs_contig_coverage(tumor = cov_contig_tumor, normal = cov_co
 (fine_hist / fine_cumsum) | contig_cov
 ```
 
-#### Coverage Metrics
+#### Time Metrics
+```{r qc_time_metrics}
+time_metrics <- glue::glue("{res_dir}/{nm}.time_metrics.csv") %>%
+  dracarys::read_time_metrics()
+
+time_metrics %>%
+  knitr::kable(format = "html", col.names = NULL, caption = "Time Metrics") %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "left",
+                            bootstrap_options = c("striped", "bordered",
+                                                  "condensed", "hover")) %>%
+  kableExtra::column_spec(1, bold = TRUE) %>%
+  kableExtra::row_spec(nrow(time_metrics), bold = T,
+                       color = "white", background = "#2c3e50")
+```
+
+#### Ploidy Estimation
+```{r qc_ploidy_estimation_tab}
+ploidy_estimation <- dracarys::read_ploidy_estimation_metrics(glue::glue("{res_dir}/{nm}.ploidy_estimation_metrics.csv"))
+ploidy_estimation %>%
+knitr::kable(format = "html", col.names = NULL, caption = "Ploidy Estimation") %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "left",
+                            bootstrap_options = c("striped", "bordered",
+                                                  "condensed", "hover")) %>%
+  kableExtra::column_spec(1, bold = TRUE) %>%
+  kableExtra::row_spec(nrow(ploidy_estimation), bold = T,
+                       color = "white", background = "#2c3e50")
+```
+
+### {-}
+
+#### Metrics Tables {.tabset .tabset-fade}
+##### Coverage
 ```{r qc_cov_metrics}
 cov_metrics_tumor <-
   glue::glue("{res_dir}/{nm}.wgs_coverage_metrics_{lab_tumor}.csv") %>%
@@ -170,19 +186,7 @@ cov_metrics_pct %>%
                   keys = TRUE, dom = 'lfrtip'))
 ```
 
-#### Ploidy Estimation
-```{r qc_ploidy_estimation_tab}
-ploidy_estimation <- dracarys::read_ploidy_estimation_metrics(glue::glue("{res_dir}/{nm}.ploidy_estimation_metrics.csv"))
-ploidy_estimation %>%
-knitr::kable(format = "html", col.names = NULL) %>%
-  kableExtra::kable_styling(full_width = FALSE, position = "left",
-                            bootstrap_options = c("striped", "bordered",
-                                                  "condensed", "hover")) %>%
-  kableExtra::column_spec(1, bold = TRUE)
-
-```
-
-#### Mapping Metrics
+##### Mapping
 ```{r qc_map_metrics_tab}
 mapping_metrics <- dracarys::read_mapping_metrics(glue::glue("{res_dir}/{nm}.mapping_metrics.csv"))
 mapping_metrics <- list(
@@ -250,7 +254,9 @@ dcount %>%
 ```
 
 
-#### VarCalling Metrics
+
+`r if (eval_steps$varcall) { c("#### VarCalling") }`
+
 ```{r qc_vc_metrics_tab, eval=eval_steps$varcall}
 vc_metrics <- read_varcalling_metrics(glue::glue("{res_dir}/{nm}.vc_metrics.csv")) %>%
   dplyr::filter(category != "summary")
@@ -314,6 +320,8 @@ dpct %>%
                   backgroundSize = "90% 90%", backgroundRepeat = 'no-repeat',
                   backgroundPosition = 'center')
 ```
+
+### {-}
 
 #### Fragment Length Distribution
 ```{r qc_frag_len_distr, fig.height=3.5}
