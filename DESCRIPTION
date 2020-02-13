@@ -14,6 +14,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 ByteCompile: true
+Remotes: github::pdiakumis/rock
 Depends:
     R (>= 3.5)
 Imports:
@@ -26,6 +27,7 @@ Imports:
     purrr,
     readr,
     rlang,
+    rock,
     scales,
     tibble,
     tidyr,
