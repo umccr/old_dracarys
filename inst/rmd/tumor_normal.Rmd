@@ -11,6 +11,7 @@ output:
     highlight: kate
 params:
   res_dir: "/path/to/dragen/results"
+  out_dir: "/path/to/dragen/results/dracarys"
   nm: "COLO829"
 title: "`r glue::glue('DRAGEN Tumor-Normal Results for {params$nm}')`"
 description: "Results from DRAGEN tumor-normal analysis"
@@ -36,8 +37,9 @@ knitr::opts_chunk$set(
 params <- function(x) {
   paths <- list(
     local = list(
-      res_dir = here::here("nogit/SBJ00238"),
-      nm = "SBJ00238")
+      res_dir = normalizePath(here::here("nogit/COLO829")),
+      nm = "COLO829",
+      out_dir = normalizePath(here::here("nogit/COLO829/dracarys")))
   )
   paths[[x]]
 }
@@ -61,12 +63,15 @@ suppressPackageStartupMessages(library(kableExtra))
 suppressPackageStartupMessages(library(patchwork))
 suppressPackageStartupMessages(library(purrr))
 suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(rock))
 suppressPackageStartupMessages(library(tidyr))
 ```
 
 ```{r var_setup}
 nm <- params$nm
 res_dir <- params$res_dir
+out_dir <- params$out_dir
+
 lab_tumor <- "tumor"
 lab_normal <- "normal"
 
@@ -79,6 +84,42 @@ eval_steps <- list(
     dplyr::pull(value) %>% toupper() %>% as.logical()
 )
 ```
+
+
+`r if (eval_steps$sv) { c("### Structural Variants") }`
+
+```{r sv_prep, eval=eval_steps$sv, message=F, warning=F}
+manta_vcf <- glue::glue("{res_dir}/{nm}.sv.vcf.gz")
+sv_vcf <- rock::prep_manta_vcf(manta_vcf, filter_pass = TRUE)$sv
+
+circos_png <- dracarys::plot_circos(
+  manta = manta_vcf,
+  circos_path = "/Users/pdiakumis/my_apps/miniconda/envs/woof/bin",
+  outdir = file.path(out_dir, "circos")
+)
+
+sv_counts <- sv_vcf %>%
+  dplyr::pull(svtype) %>%
+  table(useNA = "ifany") %>%
+  addmargins() %>%
+  tibble::as_tibble() %>%
+  purrr::set_names(c("svtype", "count")) %>%
+  dplyr::mutate(svtype = ifelse(svtype == "Sum", "Total", svtype))
+```
+
+```{r sv_results, eval=eval_steps$sv, out.width="40%"}
+sv_counts %>%
+  knitr::kable(format = "html", col.names = NULL, caption = "SV Types") %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "float_left",
+                            bootstrap_options = c("striped", "bordered", "condensed", "hover")) %>%
+  kableExtra::column_spec(1, bold = TRUE) %>%
+  kableExtra::row_spec(nrow(sv_counts), bold = T,
+                       color = "white", background = "#2c3e50")
+
+knitr::include_graphics(circos_png)
+```
+
+
 
 ### QC {.tabset .tabset-fade}
 
@@ -96,7 +137,7 @@ contig_cov <- plot_wgs_contig_coverage(tumor = cov_contig_tumor, normal = cov_co
 (fine_hist / fine_cumsum) | contig_cov
 ```
 
-#### Time Metrics
+#### Runtimes
 ```{r qc_time_metrics}
 time_metrics <- glue::glue("{res_dir}/{nm}.time_metrics.csv") %>%
   dracarys::read_time_metrics()
@@ -124,9 +165,16 @@ knitr::kable(format = "html", col.names = NULL, caption = "Ploidy Estimation") %
                        color = "white", background = "#2c3e50")
 ```
 
+#### Fragment Length Distribution
+```{r qc_frag_len_distr, fig.height=3.5}
+dracarys::plot_fragment_length_hist(glue::glue("{res_dir}/{nm}.fragment_length_hist.csv"))
+```
+
+
 ### {-}
 
 #### Metrics Tables {.tabset .tabset-fade}
+
 ##### Coverage
 ```{r qc_cov_metrics}
 cov_metrics_tumor <-
@@ -255,7 +303,7 @@ dcount %>%
 
 
 
-`r if (eval_steps$varcall) { c("#### VarCalling") }`
+`r if (eval_steps$varcall) { c("##### VarCalling") }`
 
 ```{r qc_vc_metrics_tab, eval=eval_steps$varcall}
 vc_metrics <- read_varcalling_metrics(glue::glue("{res_dir}/{nm}.vc_metrics.csv")) %>%
@@ -321,12 +369,7 @@ dpct %>%
                   backgroundPosition = 'center')
 ```
 
-### {-}
-
-#### Fragment Length Distribution
-```{r qc_frag_len_distr, fig.height=3.5}
-dracarys::plot_fragment_length_hist(glue::glue("{res_dir}/{nm}.fragment_length_hist.csv"))
-```
+#### {-}
 
 ## Addendum {.tabset .tabset-fade #addendum}
 
@@ -345,11 +388,13 @@ replay$system %>%
 #### Parameters
 ```{r dragen_replay_config}
 replay$dragen_config %>%
-  knitr::kable(format = "html") %>%
-  kableExtra::kable_styling(full_width = FALSE, position = "left",
-                            bootstrap_options = c("striped", "bordered",
-                                                  "condensed", "hover")) %>%
-  kableExtra::scroll_box(height = "200px")
+  DT::datatable(rownames = FALSE,
+                filter = list(position = "top", clear = FALSE, plain = TRUE),
+                class = "cell-border display compact",
+                extensions = c("Scroller", "KeyTable"),
+                options = list(
+                  scroller = TRUE, scrollY = 150,
+                  autoWidth = FALSE, keys = TRUE, dom = 'lfrtip'))
 ```
 
 ### Report Inputs

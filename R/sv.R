@@ -26,5 +26,5 @@ plot_circos <- function(manta, circos_path, outdir, outfile = "circos.png", geno
                     "circos -nosvg -conf {outdir}/circos.conf ",
                     "-outputdir {outdir} -outputfile {outfile}")
   system(cmd, ignore.stdout = TRUE)
-  return(file.path(outdir, "circos", outfile))
+  return(file.path(outdir, outfile))
 }
