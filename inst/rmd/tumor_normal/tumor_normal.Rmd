@@ -86,7 +86,7 @@ eval_steps <- list(
 ```
 
 
-`r if (eval_steps$sv) { c("### Structural Variants") }`
+`r if (eval_steps$sv) { c("### Structural Variants {#structuralvars}") }`
 
 ```{r sv_prep, eval=eval_steps$sv, message=F, warning=F}
 manta_vcf <- glue::glue("{res_dir}/{nm}.sv.vcf.gz")
@@ -170,8 +170,6 @@ knitr::kable(format = "html", col.names = NULL, caption = "Ploidy Estimation") %
 dracarys::plot_fragment_length_hist(glue::glue("{res_dir}/{nm}.fragment_length_hist.csv"))
 ```
 
-
-### {-}
 
 #### Metrics Tables {.tabset .tabset-fade}
 
