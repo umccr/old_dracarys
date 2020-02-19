@@ -73,10 +73,10 @@ read_wgs_coverage_metrics <- function(x, label) {
 #'   - coverage estimate = col2 / contig length
 #'
 #' @param x Path to `wgs_contig_mean_cov_<phenotype>.csv` file.
-#' @param phenotype Phenotype of file e.g. 'tumor', 'normal'.
+#' @param label Label for the file e.g. 'tumor' or 'normal'.
 #' @param keep_alt Keep the ALT + Mito chromosomes?
 #' @return tibble with following columns:
-#'   - phenotype
+#'   - label
 #'   - chrom
 #'   - n_bases
 #'   - coverage
@@ -85,10 +85,10 @@ read_wgs_coverage_metrics <- function(x, label) {
 #' x <- system.file("extdata/COLO829.wgs_contig_mean_cov_normal.csv.gz", package = "dracarys")
 #' y <- system.file("extdata/COLO829.wgs_contig_mean_cov_tumor.csv.gz", package = "dracarys")
 #'
-#' read_wgs_contig_coverage(x, phenotype = "normal")
-#' read_wgs_contig_coverage(y, phenotype = "tumor")
+#' read_wgs_contig_coverage(x, label = "normal")
+#' read_wgs_contig_coverage(y, label = "tumor")
 #' @export
-read_wgs_contig_coverage <- function(x, phenotype, keep_alt = FALSE) {
+read_wgs_contig_coverage <- function(x, label, keep_alt = FALSE) {
   readr::read_csv(x, col_names = c("chrom", "n_bases", "coverage"), col_types = "cdd") %>%
     dplyr::filter(
       if (!keep_alt) {
@@ -96,17 +96,16 @@ read_wgs_contig_coverage <- function(x, phenotype, keep_alt = FALSE) {
       } else {
         TRUE
       }) %>%
-    dplyr::mutate(phenotype = phenotype) %>%
-    dplyr::select(.data$phenotype, .data$chrom, .data$n_bases, .data$coverage)
+    dplyr::mutate(label = label) %>%
+    dplyr::select(.data$label, .data$chrom, .data$n_bases, .data$coverage)
 }
 
 #' Plot WGS Contig Mean Coverage Files
 #'
-#' Plots the `wgs_contig_mean_cov_<phenotype>.csv` files for tumor and normal.
+#' Plots the `wgs_contig_mean_cov_<phenotype>.csv` files.
 #'
-#' @param tumor Path to `wgs_contig_mean_cov_tumor.csv` file.
-#' @param normal Path to `wgs_contig_mean_cov_normal.csv` file.
-#' @param colours Colours for normal and tumor sample, in that order.
+#' @param xs Character vector containing paths to `wgs_contig_mean_cov_<phenotype>.csv` files.
+#' @param labels Character vector containing labels for the files specified in `xs`.
 #' @param top_alt_n Number of top covered alt contigs to plot per phenotype.
 #'
 #' @return A ggplot2 object with chromosomes on X axis, and coverage on Y axis.
@@ -115,17 +114,17 @@ read_wgs_contig_coverage <- function(x, phenotype, keep_alt = FALSE) {
 #' normal <- system.file("extdata/COLO829.wgs_contig_mean_cov_normal.csv.gz", package = "dracarys")
 #' tumor <- system.file("extdata/COLO829.wgs_contig_mean_cov_tumor.csv.gz", package = "dracarys")
 #'
-#' plot_wgs_contig_coverage(tumor = tumor, normal = normal)
+#' plot_wgs_contig_coverage(xs = c(tumor, normal), labels = c("tumor", "normal"))
 #' @export
-plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"), top_alt_n = 15) {
-  assertthat::assert_that(length(colours) == 2,
-                          length(top_alt_n) == 1, top_alt_n >= 0, is.numeric(top_alt_n))
-  cov_contig_normal <-
-    dracarys::read_wgs_contig_coverage(normal, phenotype = "normal", keep_alt = TRUE)
-  cov_contig_tumor <-
-    dracarys::read_wgs_contig_coverage(tumor, phenotype = "tumor", keep_alt = TRUE)
+plot_wgs_contig_coverage <- function(xs, labels, top_alt_n = 15) {
+  assertthat::assert_that(length(top_alt_n) == 1, top_alt_n >= 0, is.numeric(top_alt_n))
+  assertthat::assert_that(length(xs) == length(labels))
 
-  cov_contig <- dplyr::bind_rows(cov_contig_normal, cov_contig_tumor)
+  cov_contig <-
+    purrr::pmap(
+      list(x = xs, lab = labels, keep_alt = rep(TRUE, length(xs))),
+      dracarys::read_wgs_contig_coverage) %>%
+    dplyr::bind_rows()
 
   # Display chr1-22, X, Y at top (M goes to bottom).
   # Display top 20 of the rest, plus rest as 'other', at bottom
@@ -139,13 +138,13 @@ plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#56B4E9", "#D55
 
   main_panel <- cov_contig %>%
     dplyr::filter(.data$panel == "main") %>%
-    dplyr::select(.data$phenotype, .data$chrom, .data$coverage, .data$panel)
+    dplyr::select(.data$label, .data$chrom, .data$coverage, .data$panel)
   alt_panel <- cov_contig %>%
     dplyr::filter(.data$panel == "alt") %>%
-    dplyr::select(.data$phenotype, .data$chrom, .data$coverage, .data$panel)
+    dplyr::select(.data$label, .data$chrom, .data$coverage, .data$panel)
 
   top_alt <- alt_panel %>%
-    dplyr::group_by(.data$phenotype) %>%
+    dplyr::group_by(.data$label) %>%
     dplyr::top_n(top_alt_n, wt = .data$coverage) %>%
     dplyr::arrange(dplyr::desc(.data$coverage)) %>%
     dplyr::pull(.data$chrom) %>%
@@ -155,15 +154,15 @@ plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#56B4E9", "#D55
     dplyr::mutate(alt_group = ifelse(.data$chrom %in% top_alt, "top", "bottom"))
 
   alt_panel_final <- alt_panel2 %>%
-    dplyr::group_by(.data$alt_group, .data$phenotype) %>%
+    dplyr::group_by(.data$alt_group, .data$label) %>%
     dplyr::summarise(mean_cov = mean(.data$coverage)) %>%
-    dplyr::inner_join(alt_panel2, by = c("alt_group", "phenotype")) %>%
+    dplyr::inner_join(alt_panel2, by = c("alt_group", "label")) %>%
     dplyr::mutate(
       chrom = ifelse(.data$alt_group == "bottom", "OTHER", .data$chrom),
       coverage = ifelse(.data$alt_group == "bottom", .data$mean_cov, .data$coverage)) %>%
     dplyr::distinct() %>%
     dplyr::ungroup() %>%
-    dplyr::select(.data$phenotype, .data$chrom, .data$coverage, .data$panel)
+    dplyr::select(.data$label, .data$chrom, .data$coverage, .data$panel)
 
   chrom_fac_levels <- c(main_chrom, "chrM", "MT", top_alt[!top_alt %in% c("chrM", "MT")], "OTHER")
   d <- dplyr::bind_rows(main_panel, alt_panel_final) %>%
@@ -172,14 +171,13 @@ plot_wgs_contig_coverage <- function(tumor, normal, colours = c("#56B4E9", "#D55
   d %>%
     ggplot2::ggplot(
       ggplot2::aes(x = .data$chrom, y = .data$coverage,
-                   colour = .data$phenotype, group = .data$phenotype)) +
+                   colour = .data$label, group = .data$label)) +
     ggplot2::geom_line() +
-    ggplot2::scale_colour_manual(values = colours) +
     ggplot2::scale_y_continuous(
       limits = c(0, NA), expand = c(0, 0), labels = scales::comma,
       breaks = scales::pretty_breaks(n = 8)) +
     ggplot2::theme_minimal() +
-    ggplot2::labs(title = "Mean Coverage Per Chromosome", colour = "Phenotype") +
+    ggplot2::labs(title = "Mean Coverage Per Chromosome", colour = "Label") +
     ggplot2::xlab("Chromosome") +
     ggplot2::ylab("Coverage") +
     ggplot2::theme(
