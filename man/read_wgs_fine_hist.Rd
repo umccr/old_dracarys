@@ -4,12 +4,12 @@
 \alias{read_wgs_fine_hist}
 \title{Read WGS Fine Hist File}
 \usage{
-read_wgs_fine_hist(x, phenotype)
+read_wgs_fine_hist(x, label)
 }
 \arguments{
 \item{x}{Path to \code{wgs_fine_hist_<phenotype>.csv} file.}
 
-\item{phenotype}{Phenotype of file e.g. 'tumor', 'normal'.}
+\item{label}{Label for the file e.g. 'tumor' or 'normal'.}
 }
 \value{
 tibble with two columns:
@@ -28,6 +28,6 @@ column indicates the number of loci covered at the corresponding depth.
 x <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
 y <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
 
-read_wgs_fine_hist(x, phenotype = "normal")
-read_wgs_fine_hist(x, phenotype = "tumor")
+read_wgs_fine_hist(x, label = "normal")
+read_wgs_fine_hist(x, label = "tumor")
 }

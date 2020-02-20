@@ -4,15 +4,12 @@
 \alias{plot_wgs_fine_hist}
 \title{Plot WGS Fine Hist File}
 \usage{
-plot_wgs_fine_hist(tumor, normal, colours = c("#56B4E9", "#D55E00"),
-  x_lim = c(0, 300))
+plot_wgs_fine_hist(xs, labels, x_lim = c(0, 300))
 }
 \arguments{
-\item{tumor}{Path to \code{wgs_fine_hist_tumor.csv} file.}
+\item{xs}{Character vector containing paths to \code{wgs_fine_hist_<phenotype>.csv} files.}
 
-\item{normal}{Path to \code{wgs_fine_hist_normal.csv} file.}
-
-\item{colours}{Colours for normal and tumor sample, in that order.}
+\item{labels}{Character vector containing labels for the files specified in \code{xs}.}
 
 \item{x_lim}{X axis range to plot.}
 }
@@ -21,12 +18,12 @@ A ggplot2 object with depth of coverage on X axis, and number of loci with
 that depth on Y axis.
 }
 \description{
-Plots the \code{wgs_fine_hist_<phenotype>.csv} files for tumor and normal.
+Plots the \code{wgs_fine_hist_<phenotype>.csv} files.
 }
 \examples{
 normal <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
 tumor <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
 
-plot_wgs_fine_hist(tumor = tumor, normal = normal)
-plot_wgs_fine_hist(tumor = tumor, normal = normal, x_lim = c(0, 500))
+plot_wgs_fine_hist(xs = c(tumor, normal), labels = c("tumor", "normal"))
+plot_wgs_fine_hist(xs = c(tumor, normal), labels = c("tumor", "normal"), x_lim = c(0, 500))
 }

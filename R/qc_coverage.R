@@ -200,7 +200,7 @@ plot_wgs_contig_coverage <- function(xs, labels, top_alt_n = 15) {
 #' column indicates the number of loci covered at the corresponding depth.
 #'
 #' @param x Path to `wgs_fine_hist_<phenotype>.csv` file.
-#' @param phenotype Phenotype of file e.g. 'tumor', 'normal'.
+#' @param label Label for the file e.g. 'tumor' or 'normal'.
 #' @return tibble with two columns:
 #'   - Depth
 #'   - Overall
@@ -209,28 +209,27 @@ plot_wgs_contig_coverage <- function(xs, labels, top_alt_n = 15) {
 #' x <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
 #' y <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
 #'
-#' read_wgs_fine_hist(x, phenotype = "normal")
-#' read_wgs_fine_hist(x, phenotype = "tumor")
+#' read_wgs_fine_hist(x, label = "normal")
+#' read_wgs_fine_hist(x, label = "tumor")
 #' @export
-read_wgs_fine_hist <- function(x, phenotype) {
+read_wgs_fine_hist <- function(x, label) {
   d <- readr::read_csv(x, col_types = "cd")
   assertthat::assert_that(all(colnames(d) == c("Depth", "Overall")))
 
   d %>%
-    dplyr::mutate(phenotype = phenotype,
+    dplyr::mutate(label = label,
                   Depth = ifelse(grepl("1000+", .data$Depth), 1000, .data$Depth),
                   Depth = as.integer(.data$Depth)) %>%
-    dplyr::select(.data$phenotype, depth = .data$Depth, n_loci = .data$Overall)
+    dplyr::select(.data$label, depth = .data$Depth, n_loci = .data$Overall)
 }
 
 
 #' Plot WGS Fine Hist File
 #'
-#' Plots the `wgs_fine_hist_<phenotype>.csv` files for tumor and normal.
+#' Plots the `wgs_fine_hist_<phenotype>.csv` files.
 #'
-#' @param tumor Path to `wgs_fine_hist_tumor.csv` file.
-#' @param normal Path to `wgs_fine_hist_normal.csv` file.
-#' @param colours Colours for normal and tumor sample, in that order.
+#' @param xs Character vector containing paths to `wgs_fine_hist_<phenotype>.csv` files.
+#' @param labels Character vector containing labels for the files specified in `xs`.
 #' @param x_lim X axis range to plot.
 #'
 #' @return A ggplot2 object with depth of coverage on X axis, and number of loci with
@@ -240,32 +239,32 @@ read_wgs_fine_hist <- function(x, phenotype) {
 #' normal <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
 #' tumor <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
 #'
-#' plot_wgs_fine_hist(tumor = tumor, normal = normal)
-#' plot_wgs_fine_hist(tumor = tumor, normal = normal, x_lim = c(0, 500))
+#' plot_wgs_fine_hist(xs = c(tumor, normal), labels = c("tumor", "normal"))
+#' plot_wgs_fine_hist(xs = c(tumor, normal), labels = c("tumor", "normal"), x_lim = c(0, 500))
 #' @export
-plot_wgs_fine_hist <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"), x_lim = c(0, 300)) {
-  assertthat::assert_that(length(colours) == 2, length(x_lim) == 2)
-  norm <- read_wgs_fine_hist(normal, phenotype = "normal")
-  tum <- read_wgs_fine_hist(tumor, phenotype = "tumor")
-  cov <- dplyr::bind_rows(norm, tum)
+plot_wgs_fine_hist <- function(xs, labels, x_lim = c(0, 300)) {
+  assertthat::assert_that(length(xs) == length(labels), length(x_lim) == 2)
+
+  cov <-
+    purrr::map2(xs, labels, dracarys::read_wgs_fine_hist) %>%
+    dplyr::bind_rows()
 
   cov %>%
     ggplot2::ggplot(ggplot2::aes(x = .data$depth, y = .data$n_loci,
-                                 colour = .data$phenotype, group = .data$phenotype)) +
+                                 colour = .data$label, group = .data$label)) +
     ggplot2::geom_line() +
     ggplot2::coord_cartesian(xlim = x_lim) +
-    ggplot2::scale_colour_manual(values = colours) +
     ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::scale_x_continuous(breaks = scales::pretty_breaks(n = 8)) +
     ggplot2::theme_minimal() +
-    ggplot2::labs(title = "Coverage Distribution", colour = "Phenotype") +
+    ggplot2::labs(title = "Coverage Distribution", colour = "Label") +
     ggplot2::xlab("Depth of Coverage") +
     ggplot2::ylab("Number of Loci with Given Coverage") +
     ggplot2::theme(
       legend.position = c(0.9, 0.9),
       legend.justification = c(1, 1),
       panel.grid.minor = ggplot2::element_blank(),
-      # panel.grid.major = ggplot2::element_blank(),
+      panel.grid.major.y = ggplot2::element_blank(),
       # axis.text.x = ggplot2::element_text(angle = 0, vjust = 1, hjust = 1),
       plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"))
 }
@@ -275,9 +274,8 @@ plot_wgs_fine_hist <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"),
 #'
 #' Plots the `wgs_fine_hist_<phenotype>.csv` coverage cumsum.
 #'
-#' @param tumor Path to `wgs_fine_hist_tumor.csv` file.
-#' @param normal Path to `wgs_fine_hist_normal.csv` file.
-#' @param colours Colours for normal and tumor sample, in that order.
+#' @param xs Character vector containing paths to `wgs_fine_hist_<phenotype>.csv` files.
+#' @param labels Character vector containing labels for the files specified in `xs`.
 #' @param y_lim Y axis lower limit.
 #'
 #' @return A ggplot2 object with depth of coverage on X axis, and fraction
@@ -287,15 +285,14 @@ plot_wgs_fine_hist <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"),
 #' normal <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
 #' tumor <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
 #'
-#' plot_wgs_fine_cumsum(tumor = tumor, normal = normal)
+#' plot_wgs_fine_cumsum(xs = c(tumor, normal), labels = c("tumor", "normal"))
 #' @export
-plot_wgs_fine_cumsum <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"), y_lim = 0.003) {
-  assertthat::assert_that(length(colours) == 2, length(y_lim) == 1)
-  norm <- read_wgs_fine_hist(normal, phenotype = "normal")
-  tum <- read_wgs_fine_hist(tumor, phenotype = "tumor")
+plot_wgs_fine_cumsum <- function(xs, labels, y_lim = 0.003) {
+  assertthat::assert_that(length(xs) == length(labels), length(y_lim) == 1)
   cov <-
-    dplyr::bind_rows(norm, tum) %>%
-    dplyr::group_by(.data$phenotype) %>%
+    purrr::map2(xs, labels, dracarys::read_wgs_fine_hist) %>%
+    dplyr::bind_rows() %>%
+    dplyr::group_by(.data$label) %>%
     dplyr::mutate(freq = .data$n_loci / sum(.data$n_loci)) %>%
     dplyr::arrange(dplyr::desc(.data$depth)) %>%
     dplyr::mutate(cumsum = cumsum(.data$freq)) %>%
@@ -304,18 +301,17 @@ plot_wgs_fine_cumsum <- function(tumor, normal, colours = c("#56B4E9", "#D55E00"
 
   cov %>%
     ggplot2::ggplot(
-      ggplot2::aes(x = .data$depth, y = .data$cumsum, colour = .data$phenotype)) +
+      ggplot2::aes(x = .data$depth, y = .data$cumsum, colour = .data$label)) +
     ggplot2::geom_line() +
-    ggplot2::scale_colour_manual(values = colours) +
     ggplot2::scale_x_continuous(breaks = scales::pretty_breaks(n = 8)) +
+    ggplot2::scale_y_continuous(labels = scales::percent) +
     ggplot2::theme_minimal() +
-    ggplot2::labs(title = "Cumulative Coverage", colour = "Phenotype") +
+    ggplot2::labs(title = "Cumulative Coverage", colour = "Label") +
     ggplot2::xlab("Depth of Coverage") +
     ggplot2::ylab("Fraction of Loci with >= Given Coverage") +
     ggplot2::theme(
       legend.position = c(0.9, 0.9),
       legend.justification = c(1, 1),
       panel.grid.minor = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1),
       plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"))
 }
