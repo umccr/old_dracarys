@@ -32,25 +32,27 @@ read_fragment_length_hist <- function(x) {
 
 #' Plot Fragment Length Distribution
 #'
-#' Plots the fragment length distributions as written in the `fragment_length_hist.csv` file.
+#' Plots the fragment length distributions as written in the `fragment_length_hist.csv` files.
 #'
-#' @param x Path to `fragment_length_hist.csv` file.
-#' @param colours Colours for tumor and normal samples (alphanumerically sorted).
+#' @param xs Character vector containing paths to `fragment_length_hist.csv` files.
 #' @param min_count Minimum read count to be plotted (Default: 10).
 #' @return A ggplot2 plot containing insert lengths on X axis and read counts
 #'   on Y axis for each sample.
 #'
 #' @examples
 #' x <- system.file("extdata/Colo829.fragment_length_hist.csv.gz", package = "dracarys")
-#' plot_fragment_length_hist(x, min_count = 10)
+#'
+#' plot_fragment_length_hist(xs = x, min_count = 10)
 #' @export
-plot_fragment_length_hist <- function(x, colours = c("#56B4E9", "#D55E00"), min_count = 10) {
-  assertthat::assert_that(is.numeric(min_count), min_count >= 0, length(colours) == 2)
-  read_fragment_length_hist(x) %>%
-    dplyr::filter(.data$count >= min_count) %>%
+plot_fragment_length_hist <- function(xs, min_count = 10) {
+  assertthat::assert_that(is.numeric(min_count), min_count >= 0, length(xs) > 0)
+  d <- purrr::map(xs, read_fragment_length_hist) %>%
+    dplyr::bind_rows() %>%
+    dplyr::filter(.data$count >= min_count)
+
+  d %>%
     ggplot2::ggplot(ggplot2::aes(x = .data$fragmentLength, y = .data$count, colour = sample)) +
     ggplot2::geom_line() +
-    ggplot2::scale_colour_manual(values = colours) +
     ggplot2::labs(title = "Fragment Length Distribution") +
     ggplot2::xlab("Fragment Length (bp)") +
     ggplot2::ylab(glue::glue("Read Count (min: {min_count})")) +
