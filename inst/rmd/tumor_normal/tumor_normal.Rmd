@@ -47,7 +47,7 @@ params <- params("local")
 
 render_me <- function() {
   rmarkdown::render(
-    input = here::here("inst/rmd/tumor_normal.Rmd"),
+    input = here::here("inst/rmd/tumor_normal/tumor_normal.Rmd"),
     params = params)
 }
 render_me()
@@ -130,9 +130,9 @@ cov_contig_tumor <- glue::glue("{res_dir}/{nm}.wgs_contig_mean_cov_{lab_tumor}.c
 cov_fine_normal <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_normal}.csv")
 cov_fine_tumor <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_tumor}.csv")
 
-fine_hist <- plot_wgs_fine_hist(tumor = cov_fine_tumor, normal = cov_fine_normal)
-fine_cumsum <- plot_wgs_fine_cumsum(tumor = cov_fine_tumor, normal = cov_fine_normal)
-contig_cov <- plot_wgs_contig_coverage(tumor = cov_contig_tumor, normal = cov_contig_normal)
+fine_hist <- plot_wgs_fine_hist(xs = c(cov_fine_tumor, cov_fine_normal), labels = c("tumor", "normal"))
+fine_cumsum <- plot_wgs_fine_cumsum(xs = c(cov_fine_tumor, cov_fine_normal), labels = c("tumor", "normal"))
+contig_cov <- plot_wgs_contig_coverage(xs = c(cov_contig_tumor, cov_contig_normal), labels = c("tumor", "normal"))
 
 (fine_hist / fine_cumsum) | contig_cov
 ```
