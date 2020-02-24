@@ -23,7 +23,6 @@ read_replay <- function(x) {
     jsonlite::read_json(simplifyVector = TRUE) %>%
     purrr::map_if(is.data.frame, tibble::as_tibble)
   assertthat::assert_that(
-    length(res) == 4,
     all(names(res) %in% c("command_line", "dragen_config", "inputs", "system")))
 
   res$dragen_config <- res$dragen_config %>%
