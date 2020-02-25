@@ -10,11 +10,11 @@ output:
   rmdformats::material:
     highlight: kate
 params:
-  res_dir: "/path/to/dragen/results"
-  out_dir: "/path/to/dragen/results/dracarys"
-  nm: "COLO829"
-title: "`r glue::glue('DRAGEN Tumor-Normal Results for {params$nm}')`"
-description: "Results from DRAGEN tumor-normal analysis"
+  name: "COLO829"
+  in_dir: "/path/to/dragen/results"
+  out_dir: "/path/to/output/dracarys"
+title: "`r glue::glue('DRAGEN Results for {params$name}')`"
+description: "Results from DRAGEN analysis"
 ---
 
 <style type="text/css">
@@ -37,9 +37,9 @@ knitr::opts_chunk$set(
 params <- function(x) {
   paths <- list(
     local = list(
-      res_dir = normalizePath(here::here("nogit/COLO829")),
-      nm = "COLO829",
-      out_dir = normalizePath(here::here("nogit/COLO829/dracarys")))
+      name = "COLO829_TN",
+      in_dir = normalizePath(here::here("nogit/COLO829/COLO829_TN")),
+      out_dir = normalizePath(here::here("nogit/COLO829/COLO829_TN/dracarys")))
   )
   paths[[x]]
 }
@@ -57,6 +57,7 @@ render_me()
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(dracarys))
 suppressPackageStartupMessages(library(DT))
+suppressPackageStartupMessages(library(fs))
 suppressPackageStartupMessages(library(glue))
 suppressPackageStartupMessages(library(jsonlite))
 suppressPackageStartupMessages(library(kableExtra))
@@ -68,20 +69,16 @@ suppressPackageStartupMessages(library(tidyr))
 ```
 
 ```{r var_setup}
-nm <- params$nm
-res_dir <- params$res_dir
+in_dir <- params$in_dir
 out_dir <- params$out_dir
+nm <- params$name
 
-lab_tumor <- "tumor"
-lab_normal <- "normal"
+replay <- list.files(in_dir, pattern = "-replay.json", full.names = TRUE, recursive = TRUE)
+v <- dracarys::setup_vars(replay)
 
-replay <- glue::glue("{res_dir}/{nm}-replay.json") %>% dracarys::read_replay()
-dragen_config <- replay$dragen_config
 eval_steps <- list(
-  sv = dplyr::filter(replay$dragen_config, grepl("^enable-sv$", name)) %>%
-    dplyr::pull(value) %>% toupper() %>% as.logical(),
-  varcall = dplyr::filter(replay$dragen_config, grepl("^enable-variant-caller$", name)) %>%
-    dplyr::pull(value) %>% toupper() %>% as.logical()
+  sv = v[[1]][["info"]][["sv"]],
+  varcall = v[[1]][["info"]][["vc"]]
 )
 ```
 
@@ -89,7 +86,7 @@ eval_steps <- list(
 `r if (eval_steps$sv) { c("### Structural Variants {#structuralvars}") }`
 
 ```{r sv_prep, eval=eval_steps$sv, message=F, warning=F}
-manta_vcf <- glue::glue("{res_dir}/{nm}.sv.vcf.gz")
+manta_vcf <- v[[1]][["sv_fn"]]
 sv_vcf <- rock::prep_manta_vcf(manta_vcf, filter_pass = TRUE)$sv
 
 circos_png <- dracarys::plot_circos(
@@ -125,24 +122,19 @@ knitr::include_graphics(circos_png)
 
 #### Coverage Plots
 ```{r qc_cov_contig_plot, fig.width=14, fig.height=10}
-cov_contig_normal <- glue::glue("{res_dir}/{nm}.wgs_contig_mean_cov_{lab_normal}.csv")
-cov_contig_tumor <- glue::glue("{res_dir}/{nm}.wgs_contig_mean_cov_{lab_tumor}.csv")
-cov_fine_normal <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_normal}.csv")
-cov_fine_tumor <- glue::glue("{res_dir}/{nm}.wgs_fine_hist_{lab_tumor}.csv")
-
-fine_hist <- plot_wgs_fine_hist(xs = c(cov_fine_tumor, cov_fine_normal), labels = c("tumor", "normal"))
-fine_cumsum <- plot_wgs_fine_cumsum(xs = c(cov_fine_tumor, cov_fine_normal), labels = c("tumor", "normal"))
-contig_cov <- plot_wgs_contig_coverage(xs = c(cov_contig_tumor, cov_contig_normal), labels = c("tumor", "normal"))
+fine_hist <- plot_wgs_fine_hist(xs = v[[1]][["cov_finehist_fn"]])
+fine_cumsum <- plot_wgs_fine_cumsum(xs = v[[1]][["cov_finehist_fn"]])
+contig_cov <- plot_wgs_contig_coverage(xs = v[[1]][["cov_contig_fn"]])
 
 (fine_hist / fine_cumsum) | contig_cov
 ```
 
 #### Runtimes
 ```{r qc_time_metrics}
-time_metrics <- glue::glue("{res_dir}/{nm}.time_metrics.csv") %>%
-  dracarys::read_time_metrics()
+time_metrics <- dracarys::read_time_metrics(v[[1]][["time_met_fn"]])
 
 time_metrics %>%
+  dplyr::select(-Label) %>%
   knitr::kable(format = "html", col.names = NULL, caption = "Time Metrics") %>%
   kableExtra::kable_styling(full_width = FALSE, position = "left",
                             bootstrap_options = c("striped", "bordered",
@@ -154,7 +146,7 @@ time_metrics %>%
 
 #### Ploidy Estimation
 ```{r qc_ploidy_estimation_tab}
-ploidy_estimation <- dracarys::read_ploidy_estimation_metrics(glue::glue("{res_dir}/{nm}.ploidy_estimation_metrics.csv"))
+ploidy_estimation <- dracarys::read_ploidy_estimation_metrics(v[[1]][["ploidy_est_fn"]])
 ploidy_estimation %>%
 knitr::kable(format = "html", col.names = NULL, caption = "Ploidy Estimation") %>%
   kableExtra::kable_styling(full_width = FALSE, position = "left",
@@ -167,7 +159,7 @@ knitr::kable(format = "html", col.names = NULL, caption = "Ploidy Estimation") %
 
 #### Fragment Length Distribution
 ```{r qc_frag_len_distr, fig.height=3.5}
-dracarys::plot_fragment_length_hist(glue::glue("{res_dir}/{nm}.fragment_length_hist.csv"))
+dracarys::plot_fragment_length_hist(v[[1]][["fraglen_fn"]])
 ```
 
 
@@ -175,14 +167,8 @@ dracarys::plot_fragment_length_hist(glue::glue("{res_dir}/{nm}.fragment_length_h
 
 ##### Coverage
 ```{r qc_cov_metrics}
-cov_metrics_tumor <-
-  glue::glue("{res_dir}/{nm}.wgs_coverage_metrics_{lab_tumor}.csv") %>%
-  dracarys::read_wgs_coverage_metrics(label = lab_tumor)
-cov_metrics_normal <-
-  glue::glue("{res_dir}/{nm}.wgs_coverage_metrics_{lab_normal}.csv") %>%
-  dracarys::read_wgs_coverage_metrics(label = lab_normal)
-
-cov_metrics <- dplyr::bind_rows(cov_metrics_tumor, cov_metrics_normal)
+cov_metrics <- purrr::map(v[[1]][["cov_met_fn"]], dracarys::read_wgs_coverage_metrics) %>%
+ dplyr::bind_rows()
 ```
 
 ```{r qc_cov_metrics_count}
@@ -234,7 +220,7 @@ cov_metrics_pct %>%
 
 ##### Mapping
 ```{r qc_map_metrics_tab}
-mapping_metrics <- dracarys::read_mapping_metrics(glue::glue("{res_dir}/{nm}.mapping_metrics.csv"))
+mapping_metrics <- dracarys::read_mapping_metrics(v[[1]][["map_met_fn"]])
 mapping_metrics <- list(
   data = mapping_metrics,
   abbrev = dplyr::distinct(mapping_metrics, var, var_abbrev),
@@ -299,12 +285,10 @@ dcount %>%
                      currency = "", interval = 3, mark = ",", digits = 0)
 ```
 
-
-
 `r if (eval_steps$varcall) { c("##### VarCalling") }`
 
 ```{r qc_vc_metrics_tab, eval=eval_steps$varcall}
-vc_metrics <- read_varcalling_metrics(glue::glue("{res_dir}/{nm}.vc_metrics.csv")) %>%
+vc_metrics <- dracarys::read_varcalling_metrics(v[[1]][["vc_met_fn"]]) %>%
   dplyr::filter(category != "summary")
 vc_metrics <- list(
   data = vc_metrics,
@@ -375,6 +359,7 @@ dpct %>%
 
 #### Version
 ```{r dragen_replay_system}
+replay <- dracarys::read_replay(v[[1]][["replay_fn"]])
 replay$system %>%
   knitr::kable(format = "html", col.names = NULL) %>%
   kableExtra::kable_styling(full_width = FALSE, position = "left",
