@@ -4,12 +4,10 @@
 \alias{read_wgs_contig_coverage}
 \title{Read WGS Contig Mean Coverage File}
 \usage{
-read_wgs_contig_coverage(x, label, keep_alt = FALSE)
+read_wgs_contig_coverage(x, keep_alt = FALSE)
 }
 \arguments{
 \item{x}{Path to \code{wgs_contig_mean_cov_<phenotype>.csv} file.}
-
-\item{label}{Label for the file e.g. 'tumor' or 'normal'.}
 
 \item{keep_alt}{Keep the ALT + Mito chromosomes?}
 }
@@ -37,6 +35,6 @@ Columns are:
 x <- system.file("extdata/COLO829.wgs_contig_mean_cov_normal.csv.gz", package = "dracarys")
 y <- system.file("extdata/COLO829.wgs_contig_mean_cov_tumor.csv.gz", package = "dracarys")
 
-read_wgs_contig_coverage(x, label = "normal")
-read_wgs_contig_coverage(y, label = "tumor")
+read_wgs_contig_coverage(x)
+read_wgs_contig_coverage(y)
 }

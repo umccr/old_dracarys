@@ -21,9 +21,14 @@ read_ploidy_estimation_metrics <- function(x) {
   d <- readr::read_lines(x)
   assertthat::assert_that(grepl("PLOIDY ESTIMATION", d[1]))
 
+  b <- basename(x)
+  label <- sub("(.*)\\.ploidy_estimation_metrics.*", "\\1", b)
+
+
   d %>%
     tibble::enframe(name = "name", value = "value") %>%
     tidyr::separate(.data$value, into = c("dummy1", "dummy2", "var", "value"), sep = ",", convert = FALSE) %>%
-    dplyr::select(.data$var, .data$value)
+    dplyr::mutate(label = label) %>%
+    dplyr::select(.data$label, .data$var, .data$value)
 
 }

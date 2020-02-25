@@ -4,12 +4,10 @@
 \alias{plot_wgs_fine_hist}
 \title{Plot WGS Fine Hist File}
 \usage{
-plot_wgs_fine_hist(xs, labels, x_lim = c(0, 300))
+plot_wgs_fine_hist(xs, x_lim = c(0, 300))
 }
 \arguments{
 \item{xs}{Character vector containing paths to \code{wgs_fine_hist_<phenotype>.csv} files.}
-
-\item{labels}{Character vector containing labels for the files specified in \code{xs}.}
 
 \item{x_lim}{X axis range to plot.}
 }
@@ -24,6 +22,6 @@ Plots the \code{wgs_fine_hist_<phenotype>.csv} files.
 normal <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
 tumor <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
 
-plot_wgs_fine_hist(xs = c(tumor, normal), labels = c("tumor", "normal"))
-plot_wgs_fine_hist(xs = c(tumor, normal), labels = c("tumor", "normal"), x_lim = c(0, 500))
+plot_wgs_fine_hist(xs = c(tumor, normal))
+plot_wgs_fine_hist(xs = c(tumor, normal), x_lim = c(0, 500))
 }

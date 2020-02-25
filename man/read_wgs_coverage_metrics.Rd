@@ -4,12 +4,10 @@
 \alias{read_wgs_coverage_metrics}
 \title{Read WGS Coverage Metrics File}
 \usage{
-read_wgs_coverage_metrics(x, label)
+read_wgs_coverage_metrics(x)
 }
 \arguments{
 \item{x}{Path to \code{wgs_coverage_metrics_<phenotype>.csv} file.}
-
-\item{label}{Label for the file e.g. 'tumor' or 'normal'.}
 }
 \value{
 tibble with following columns:
@@ -29,6 +27,6 @@ read depth of coverage metrics.
 x <- system.file("extdata/COLO829.wgs_coverage_metrics_normal.csv.gz", package = "dracarys")
 y <- system.file("extdata/COLO829.wgs_coverage_metrics_tumor.csv.gz", package = "dracarys")
 
-read_wgs_coverage_metrics(x, label = "normal")
-read_wgs_coverage_metrics(y, label = "tumor")
+read_wgs_coverage_metrics(x)
+read_wgs_coverage_metrics(y)
 }

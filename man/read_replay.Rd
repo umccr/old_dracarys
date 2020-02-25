@@ -4,12 +4,10 @@
 \alias{read_replay}
 \title{Read Replay File}
 \usage{
-read_replay(x, label)
+read_replay(x)
 }
 \arguments{
 \item{x}{Path to \code{replay.json} file.}
-
-\item{label}{Label for the file.}
 }
 \value{
 A list with the following elements:
@@ -26,6 +24,6 @@ parameters, version and inputs for the specific run.
 }
 \examples{
 x <- system.file("extdata/COLO829-replay.json.gz", package = "dracarys")
-read_replay(x, label = "COLO829")
+read_replay(x)
 
 }

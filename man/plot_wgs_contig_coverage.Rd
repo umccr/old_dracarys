@@ -4,12 +4,10 @@
 \alias{plot_wgs_contig_coverage}
 \title{Plot WGS Contig Mean Coverage Files}
 \usage{
-plot_wgs_contig_coverage(xs, labels, top_alt_n = 15)
+plot_wgs_contig_coverage(xs, top_alt_n = 15)
 }
 \arguments{
 \item{xs}{Character vector containing paths to \code{wgs_contig_mean_cov_<phenotype>.csv} files.}
-
-\item{labels}{Character vector containing labels for the files specified in \code{xs}.}
 
 \item{top_alt_n}{Number of top covered alt contigs to plot per phenotype.}
 }
@@ -23,5 +21,5 @@ Plots the \code{wgs_contig_mean_cov_<phenotype>.csv} files.
 normal <- system.file("extdata/COLO829.wgs_contig_mean_cov_normal.csv.gz", package = "dracarys")
 tumor <- system.file("extdata/COLO829.wgs_contig_mean_cov_tumor.csv.gz", package = "dracarys")
 
-plot_wgs_contig_coverage(xs = c(tumor, normal), labels = c("tumor", "normal"))
+plot_wgs_contig_coverage(xs = c(tumor, normal))
 }

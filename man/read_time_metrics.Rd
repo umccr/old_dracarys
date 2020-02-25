@@ -4,12 +4,10 @@
 \alias{read_time_metrics}
 \title{Read Time Metrics File}
 \usage{
-read_time_metrics(x, label)
+read_time_metrics(x)
 }
 \arguments{
 \item{x}{Path to \code{time_metrics.csv} file.}
-
-\item{label}{Label for the file.}
 }
 \value{
 tibble with the following columns:
@@ -24,5 +22,5 @@ a breakdown of the run duration for each DRAGEN process.
 }
 \examples{
 x <- system.file("extdata/COLO829.time_metrics.csv.gz", package = "dracarys")
-read_time_metrics(x, label = "COLO829")
+read_time_metrics(x)
 }

@@ -34,8 +34,8 @@ read_wgs_coverage_metrics <- function(x) {
     "Aligned reads in genome" = "Aln Reads Genome")
 
   b <- basename(x)
-  suffix <- ifelse(grepl("_normal\\.csv", b), "_normal",
-                   ifelse(grepl("_tumor\\.csv", b), "_tumor",
+  suffix <- ifelse(grepl("_normal\\.csv", b), "_N",
+                   ifelse(grepl("_tumor\\.csv", b), "_T",
                           ""))
   nm <- sub("(.*)\\.wgs_coverage_metrics.*", "\\1", b)
   label <- paste0(nm, suffix)
@@ -96,8 +96,8 @@ read_wgs_coverage_metrics <- function(x) {
 read_wgs_contig_coverage <- function(x, keep_alt = FALSE) {
 
   b <- basename(x)
-  suffix <- ifelse(grepl("_normal\\.csv", b), "_normal",
-                   ifelse(grepl("_tumor\\.csv", b), "_tumor",
+  suffix <- ifelse(grepl("_normal\\.csv", b), "_N",
+                   ifelse(grepl("_tumor\\.csv", b), "_T",
                           ""))
   nm <- sub("(.*)\\.wgs_contig_mean_cov.*", "\\1", b)
   label <- paste0(nm, suffix)
@@ -118,7 +118,6 @@ read_wgs_contig_coverage <- function(x, keep_alt = FALSE) {
 #' Plots the `wgs_contig_mean_cov_<phenotype>.csv` files.
 #'
 #' @param xs Character vector containing paths to `wgs_contig_mean_cov_<phenotype>.csv` files.
-#' @param labels Character vector containing labels for the files specified in `xs`.
 #' @param top_alt_n Number of top covered alt contigs to plot per phenotype.
 #'
 #' @return A ggplot2 object with chromosomes on X axis, and coverage on Y axis.
@@ -127,16 +126,13 @@ read_wgs_contig_coverage <- function(x, keep_alt = FALSE) {
 #' normal <- system.file("extdata/COLO829.wgs_contig_mean_cov_normal.csv.gz", package = "dracarys")
 #' tumor <- system.file("extdata/COLO829.wgs_contig_mean_cov_tumor.csv.gz", package = "dracarys")
 #'
-#' plot_wgs_contig_coverage(xs = c(tumor, normal), labels = c("tumor", "normal"))
+#' plot_wgs_contig_coverage(xs = c(tumor, normal))
 #' @export
-plot_wgs_contig_coverage <- function(xs, labels, top_alt_n = 15) {
+plot_wgs_contig_coverage <- function(xs, top_alt_n = 15) {
   assertthat::assert_that(length(top_alt_n) == 1, top_alt_n >= 0, is.numeric(top_alt_n))
-  assertthat::assert_that(length(xs) == length(labels))
 
   cov_contig <-
-    purrr::pmap(
-      list(x = xs, lab = labels, keep_alt = rep(TRUE, length(xs))),
-      dracarys::read_wgs_contig_coverage) %>%
+    purrr::map(.x = xs, dracarys::read_wgs_contig_coverage, keep_alt = TRUE) %>%
     dplyr::bind_rows()
 
   # Display chr1-22, X, Y at top (M goes to bottom).
@@ -213,21 +209,28 @@ plot_wgs_contig_coverage <- function(xs, labels, top_alt_n = 15) {
 #' column indicates the number of loci covered at the corresponding depth.
 #'
 #' @param x Path to `wgs_fine_hist_<phenotype>.csv` file.
-#' @param label Label for the file e.g. 'tumor' or 'normal'.
-#' @return tibble with two columns:
-#'   - Depth
-#'   - Overall
+#' @return tibble with three columns:
+#'   - label
+#'   - depth
+#'   - number of loci with given depth
 #'
 #' @examples
 #' x <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
 #' y <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
 #'
-#' read_wgs_fine_hist(x, label = "normal")
-#' read_wgs_fine_hist(x, label = "tumor")
+#' read_wgs_fine_hist(x)
+#' read_wgs_fine_hist(y)
 #' @export
-read_wgs_fine_hist <- function(x, label) {
+read_wgs_fine_hist <- function(x) {
   d <- readr::read_csv(x, col_types = "cd")
   assertthat::assert_that(all(colnames(d) == c("Depth", "Overall")))
+
+  b <- basename(x)
+  suffix <- ifelse(grepl("_normal\\.csv", b), "_N",
+                   ifelse(grepl("_tumor\\.csv", b), "_T",
+                          ""))
+  nm <- sub("(.*)\\.wgs_fine_hist.*", "\\1", b)
+  label <- paste0(nm, suffix)
 
   d %>%
     dplyr::mutate(label = label,
@@ -242,7 +245,6 @@ read_wgs_fine_hist <- function(x, label) {
 #' Plots the `wgs_fine_hist_<phenotype>.csv` files.
 #'
 #' @param xs Character vector containing paths to `wgs_fine_hist_<phenotype>.csv` files.
-#' @param labels Character vector containing labels for the files specified in `xs`.
 #' @param x_lim X axis range to plot.
 #'
 #' @return A ggplot2 object with depth of coverage on X axis, and number of loci with
@@ -252,14 +254,14 @@ read_wgs_fine_hist <- function(x, label) {
 #' normal <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
 #' tumor <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
 #'
-#' plot_wgs_fine_hist(xs = c(tumor, normal), labels = c("tumor", "normal"))
-#' plot_wgs_fine_hist(xs = c(tumor, normal), labels = c("tumor", "normal"), x_lim = c(0, 500))
+#' plot_wgs_fine_hist(xs = c(tumor, normal))
+#' plot_wgs_fine_hist(xs = c(tumor, normal), x_lim = c(0, 500))
 #' @export
-plot_wgs_fine_hist <- function(xs, labels, x_lim = c(0, 300)) {
-  assertthat::assert_that(length(xs) == length(labels), length(x_lim) == 2)
+plot_wgs_fine_hist <- function(xs, x_lim = c(0, 300)) {
+  assertthat::assert_that(length(x_lim) == 2)
 
   cov <-
-    purrr::map2(xs, labels, dracarys::read_wgs_fine_hist) %>%
+    purrr::map(xs, dracarys::read_wgs_fine_hist) %>%
     dplyr::bind_rows()
 
   cov %>%
@@ -288,7 +290,6 @@ plot_wgs_fine_hist <- function(xs, labels, x_lim = c(0, 300)) {
 #' Plots the `wgs_fine_hist_<phenotype>.csv` coverage cumsum.
 #'
 #' @param xs Character vector containing paths to `wgs_fine_hist_<phenotype>.csv` files.
-#' @param labels Character vector containing labels for the files specified in `xs`.
 #' @param y_lim Y axis lower limit.
 #'
 #' @return A ggplot2 object with depth of coverage on X axis, and fraction
@@ -298,12 +299,12 @@ plot_wgs_fine_hist <- function(xs, labels, x_lim = c(0, 300)) {
 #' normal <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
 #' tumor <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
 #'
-#' plot_wgs_fine_cumsum(xs = c(tumor, normal), labels = c("tumor", "normal"))
+#' plot_wgs_fine_cumsum(xs = c(tumor, normal))
 #' @export
-plot_wgs_fine_cumsum <- function(xs, labels, y_lim = 0.003) {
-  assertthat::assert_that(length(xs) == length(labels), length(y_lim) == 1)
+plot_wgs_fine_cumsum <- function(xs, y_lim = 0.003) {
+  assertthat::assert_that(length(y_lim) == 1)
   cov <-
-    purrr::map2(xs, labels, dracarys::read_wgs_fine_hist) %>%
+    purrr::map(xs, dracarys::read_wgs_fine_hist) %>%
     dplyr::bind_rows() %>%
     dplyr::group_by(.data$label) %>%
     dplyr::mutate(freq = .data$n_loci / sum(.data$n_loci)) %>%
