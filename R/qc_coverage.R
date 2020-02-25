@@ -4,7 +4,6 @@
 #' read depth of coverage metrics.
 #'
 #' @param x Path to `wgs_coverage_metrics_<phenotype>.csv` file.
-#' @param label Label for the file e.g. 'tumor' or 'normal'.
 #' @return tibble with following columns:
 #'   - label: file label.
 #'   - var: variable name.
@@ -16,10 +15,10 @@
 #' x <- system.file("extdata/COLO829.wgs_coverage_metrics_normal.csv.gz", package = "dracarys")
 #' y <- system.file("extdata/COLO829.wgs_coverage_metrics_tumor.csv.gz", package = "dracarys")
 #'
-#' read_wgs_coverage_metrics(x, label = "normal")
-#' read_wgs_coverage_metrics(y, label = "tumor")
+#' read_wgs_coverage_metrics(x)
+#' read_wgs_coverage_metrics(y)
 #' @export
-read_wgs_coverage_metrics <- function(x, label) {
+read_wgs_coverage_metrics <- function(x) {
 
   abbrev_nm <- c(
     "Aligned bases" = "Aln bases",
@@ -33,6 +32,13 @@ read_wgs_coverage_metrics <- function(x, label) {
     "Mean/Median autosomal coverage ratio over genome" = "Cov Ratio",
     "Aligned reads" = "Aln Reads",
     "Aligned reads in genome" = "Aln Reads Genome")
+
+  b <- basename(x)
+  suffix <- ifelse(grepl("_normal\\.csv", b), "_normal",
+                   ifelse(grepl("_tumor\\.csv", b), "_tumor",
+                          ""))
+  nm <- sub("(.*)\\.wgs_coverage_metrics.*", "\\1", b)
+  label <- paste0(nm, suffix)
 
   d <- readr::read_lines(x)
   assertthat::assert_that(grepl("COVERAGE SUMMARY", d[1]))
@@ -73,7 +79,6 @@ read_wgs_coverage_metrics <- function(x, label) {
 #'   - coverage estimate = col2 / contig length
 #'
 #' @param x Path to `wgs_contig_mean_cov_<phenotype>.csv` file.
-#' @param label Label for the file e.g. 'tumor' or 'normal'.
 #' @param keep_alt Keep the ALT + Mito chromosomes?
 #' @return tibble with following columns:
 #'   - label
@@ -85,10 +90,18 @@ read_wgs_coverage_metrics <- function(x, label) {
 #' x <- system.file("extdata/COLO829.wgs_contig_mean_cov_normal.csv.gz", package = "dracarys")
 #' y <- system.file("extdata/COLO829.wgs_contig_mean_cov_tumor.csv.gz", package = "dracarys")
 #'
-#' read_wgs_contig_coverage(x, label = "normal")
-#' read_wgs_contig_coverage(y, label = "tumor")
+#' read_wgs_contig_coverage(x)
+#' read_wgs_contig_coverage(y)
 #' @export
-read_wgs_contig_coverage <- function(x, label, keep_alt = FALSE) {
+read_wgs_contig_coverage <- function(x, keep_alt = FALSE) {
+
+  b <- basename(x)
+  suffix <- ifelse(grepl("_normal\\.csv", b), "_normal",
+                   ifelse(grepl("_tumor\\.csv", b), "_tumor",
+                          ""))
+  nm <- sub("(.*)\\.wgs_contig_mean_cov.*", "\\1", b)
+  label <- paste0(nm, suffix)
+
   readr::read_csv(x, col_names = c("chrom", "n_bases", "coverage"), col_types = "cdd") %>%
     dplyr::filter(
       if (!keep_alt) {

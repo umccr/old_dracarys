@@ -4,17 +4,19 @@
 \alias{read_replay}
 \title{Read Replay File}
 \usage{
-read_replay(x)
+read_replay(x, label)
 }
 \arguments{
 \item{x}{Path to \code{replay.json} file.}
+
+\item{label}{Label for the file.}
 }
 \value{
 A list with the following elements:
 \itemize{
 \item \code{command_line}: character. DRAGEN command line used.
 \item \code{dragen_config}: tibble. Parameters used for the DRAGEN run.
-\item \code{inputs}: tibble. Germline input FASTQ files.
+\item \code{inputs}: tibble. Germline input FASTQ files (if run in Tumor/Normal mode).
 \item \code{system}: list. DRAGEN version, node name, and kernel release.
 }
 }
@@ -24,6 +26,6 @@ parameters, version and inputs for the specific run.
 }
 \examples{
 x <- system.file("extdata/COLO829-replay.json.gz", package = "dracarys")
-read_replay(x)
+read_replay(x, label = "COLO829")
 
 }

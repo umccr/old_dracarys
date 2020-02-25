@@ -18,9 +18,11 @@ read_time_metrics <- function(x) {
   d <- readr::read_csv(x, col_names = cn, col_types = ct)
   assertthat::assert_that(d$dummy1[1] == "RUN TIME", is.na(d$dummy2[1]))
 
+  label <- sub(".time_metrics.csv.*", "", basename(x))
 
   d %>%
     dplyr::mutate(Step = tools::toTitleCase(sub("Time ", "", .data$Step)),
-                  Time = sub("\\..*", "", .data$time_hrs)) %>%
-    dplyr::select(.data$Step, .data$Time)
+                  Time = sub("\\..*", "", .data$time_hrs),
+                  Label = label) %>%
+    dplyr::select(.data$Label, .data$Step, .data$Time)
 }
