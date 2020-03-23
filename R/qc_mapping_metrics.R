@@ -19,7 +19,12 @@
 #'
 #' @examples
 #' x <- system.file("extdata/COLO829.mapping_metrics.csv.gz", package = "dracarys")
-#' read_mapping_metrics(x)
+#' (mm <- read_mapping_metrics(x))
+#'
+#' @testexamples
+#' expect_equal(colnames(mm), c("category", "Phenotype", "RG", "var", "var_abbrev", "count", "pct"))
+#'
+#'
 #' @export
 read_mapping_metrics <- function(x) {
 

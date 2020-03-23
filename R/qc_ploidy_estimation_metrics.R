@@ -14,7 +14,11 @@
 #'
 #' @examples
 #' x <- system.file("extdata/COLO829.ploidy_estimation_metrics.csv.gz", package = "dracarys")
-#' read_ploidy_estimation_metrics(x)
+#' (pm <- read_ploidy_estimation_metrics(x))
+#'
+#' @testexamples
+#' expect_equal(colnames(pm), c("label", "var", "value"))
+#'
 #' @export
 read_ploidy_estimation_metrics <- function(x) {
 

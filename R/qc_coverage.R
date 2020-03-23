@@ -15,8 +15,13 @@
 #' x <- system.file("extdata/COLO829.wgs_coverage_metrics_normal.csv.gz", package = "dracarys")
 #' y <- system.file("extdata/COLO829.wgs_coverage_metrics_tumor.csv.gz", package = "dracarys")
 #'
-#' read_wgs_coverage_metrics(x)
-#' read_wgs_coverage_metrics(y)
+#' (cm_x <- read_wgs_coverage_metrics(x))
+#' (cm_y <- read_wgs_coverage_metrics(y))
+#'
+#' @testexamples
+#' expect_equal(colnames(cm_x), c("label", "var", "var_abbrev", "pct", "count"))
+#' expect_equal(colnames(cm_y), c("label", "var", "var_abbrev", "pct", "count"))
+#'
 #' @export
 read_wgs_coverage_metrics <- function(x) {
 
@@ -90,8 +95,13 @@ read_wgs_coverage_metrics <- function(x) {
 #' x <- system.file("extdata/COLO829.wgs_contig_mean_cov_normal.csv.gz", package = "dracarys")
 #' y <- system.file("extdata/COLO829.wgs_contig_mean_cov_tumor.csv.gz", package = "dracarys")
 #'
-#' read_wgs_contig_coverage(x)
-#' read_wgs_contig_coverage(y)
+#' (cc_x <- read_wgs_contig_coverage(x))
+#' (cc_y <- read_wgs_contig_coverage(y))
+#'
+#' @testexamples
+#' expect_equal(colnames(cc_x), c("label", "chrom", "n_bases", "coverage"))
+#' expect_equal(colnames(cc_y), c("label", "chrom", "n_bases", "coverage"))
+#'
 #' @export
 read_wgs_contig_coverage <- function(x, keep_alt = FALSE) {
 
@@ -125,8 +135,8 @@ read_wgs_contig_coverage <- function(x, keep_alt = FALSE) {
 #' @examples
 #' normal <- system.file("extdata/COLO829.wgs_contig_mean_cov_normal.csv.gz", package = "dracarys")
 #' tumor <- system.file("extdata/COLO829.wgs_contig_mean_cov_tumor.csv.gz", package = "dracarys")
-#'
 #' plot_wgs_contig_coverage(xs = c(tumor, normal))
+#'
 #' @export
 plot_wgs_contig_coverage <- function(xs, top_alt_n = 15) {
   assertthat::assert_that(length(top_alt_n) == 1, top_alt_n >= 0, is.numeric(top_alt_n))
@@ -218,8 +228,13 @@ plot_wgs_contig_coverage <- function(xs, top_alt_n = 15) {
 #' x <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
 #' y <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
 #'
-#' read_wgs_fine_hist(x)
-#' read_wgs_fine_hist(y)
+#' (fh_x <- read_wgs_fine_hist(x))
+#' (fh_y <- read_wgs_fine_hist(y))
+#'
+#' @testexamples
+#' expect_equal(colnames(fh_x), c("label", "depth", "n_loci"))
+#' expect_equal(colnames(fh_y), c("label", "depth", "n_loci"))
+#'
 #' @export
 read_wgs_fine_hist <- function(x) {
   d <- readr::read_csv(x, col_types = "cd")

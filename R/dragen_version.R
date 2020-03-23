@@ -11,10 +11,12 @@
 #'   - `inputs`: tibble. Germline input FASTQ files (if run in Tumor/Normal mode).
 #'   - `system`: list. DRAGEN version, node name, and kernel release.
 #'
-#'
 #' @examples
 #' x <- system.file("extdata/COLO829-replay.json.gz", package = "dracarys")
-#' read_replay(x)
+#' (replay <- read_replay(x))
+#'
+#' @testexamples
+#' expect_equal(names(replay), c("command_line", "dragen_config", "inputs", "system", "label"))
 #'
 #' @export
 read_replay <- function(x) {

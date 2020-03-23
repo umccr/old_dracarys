@@ -11,7 +11,11 @@
 #'
 #' @examples
 #' x <- system.file("extdata/Colo829.fragment_length_hist.csv.gz", package = "dracarys")
-#' read_fragment_length_hist(x)
+#' (fl <- read_fragment_length_hist(x))
+#'
+#' @testexamples
+#' expect_equal(colnames(fl), c("fragmentLength", "count", "sample"))
+#'
 #' @export
 read_fragment_length_hist <- function(x) {
 

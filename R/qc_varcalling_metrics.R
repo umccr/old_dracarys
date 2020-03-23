@@ -20,7 +20,11 @@
 #'
 #' @examples
 #' x <- system.file("extdata/COLO829.vc_metrics.csv.gz", package = "dracarys")
-#' read_varcalling_metrics(x)
+#' (vm <- read_varcalling_metrics(x))
+#'
+#' @testexamples
+#' expect_equal(colnames(vm), c("category", "sample", "var", "count", "pct"))
+#'
 #' @export
 read_varcalling_metrics <- function(x) {
 

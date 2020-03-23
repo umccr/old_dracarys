@@ -10,7 +10,11 @@
 #'
 #' @examples
 #' x <- system.file("extdata/COLO829.time_metrics.csv.gz", package = "dracarys")
-#' read_time_metrics(x)
+#' (tm <- read_time_metrics(x))
+#'
+#' @testexamples
+#' expect_equal(colnames(tm), c("Label", "Step", "Time"))
+#'
 #' @export
 read_time_metrics <- function(x) {
   cn <- c("dummy1", "dummy2", "Step", "time_hrs", "time_sec")
