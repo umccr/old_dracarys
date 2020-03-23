@@ -7,7 +7,7 @@
 plot_wgs_fine_hist(xs, x_lim = c(0, 300))
 }
 \arguments{
-\item{xs}{Character vector containing paths to \code{wgs_fine_hist_<phenotype>.csv} files.}
+\item{xs}{Character vector containing paths to \verb{wgs_fine_hist_<phenotype>.csv} files.}
 
 \item{x_lim}{X axis range to plot.}
 }
@@ -16,7 +16,7 @@ A ggplot2 object with depth of coverage on X axis, and number of loci with
 that depth on Y axis.
 }
 \description{
-Plots the \code{wgs_fine_hist_<phenotype>.csv} files.
+Plots the \verb{wgs_fine_hist_<phenotype>.csv} files.
 }
 \examples{
 normal <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")

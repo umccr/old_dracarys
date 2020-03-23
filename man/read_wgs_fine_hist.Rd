@@ -7,7 +7,7 @@
 read_wgs_fine_hist(x)
 }
 \arguments{
-\item{x}{Path to \code{wgs_fine_hist_<phenotype>.csv} file.}
+\item{x}{Path to \verb{wgs_fine_hist_<phenotype>.csv} file.}
 }
 \value{
 tibble with three columns:
@@ -18,7 +18,7 @@ tibble with three columns:
 }
 }
 \description{
-Reads the \code{wgs_fine_hist_<phenotype>.csv} file, which contains
+Reads the \verb{wgs_fine_hist_<phenotype>.csv} file, which contains
 two columns: Depth and Overall.
 The value in the Depth column ranges from 0 to 1000+ and the Overall
 column indicates the number of loci covered at the corresponding depth.
@@ -27,6 +27,7 @@ column indicates the number of loci covered at the corresponding depth.
 x <- system.file("extdata/COLO829.wgs_fine_hist_normal.csv.gz", package = "dracarys")
 y <- system.file("extdata/COLO829.wgs_fine_hist_tumor.csv.gz", package = "dracarys")
 
-read_wgs_fine_hist(x)
-read_wgs_fine_hist(y)
+(fh_x <- read_wgs_fine_hist(x))
+(fh_y <- read_wgs_fine_hist(y))
+
 }

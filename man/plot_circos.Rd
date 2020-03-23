@@ -4,8 +4,14 @@
 \alias{plot_circos}
 \title{Plot SVs}
 \usage{
-plot_circos(manta, circos_path, outdir, outfile = "circos.png",
-  genome = "hg38", filter_pass = TRUE)
+plot_circos(
+  manta,
+  circos_path,
+  outdir,
+  outfile = "circos.png",
+  genome = "hg38",
+  filter_pass = TRUE
+)
 }
 \arguments{
 \item{manta}{Path to \code{sv.vcf.gz} file.}

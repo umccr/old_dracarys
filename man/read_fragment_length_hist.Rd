@@ -23,5 +23,6 @@ insert length distribution for each sample.
 }
 \examples{
 x <- system.file("extdata/Colo829.fragment_length_hist.csv.gz", package = "dracarys")
-read_fragment_length_hist(x)
+(fl <- read_fragment_length_hist(x))
+
 }

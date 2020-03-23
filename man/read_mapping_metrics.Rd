@@ -29,5 +29,6 @@ terms of pairs or alignments).
 }
 \examples{
 x <- system.file("extdata/COLO829.mapping_metrics.csv.gz", package = "dracarys")
-read_mapping_metrics(x)
+(mm <- read_mapping_metrics(x))
+
 }

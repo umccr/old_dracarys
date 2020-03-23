@@ -24,6 +24,6 @@ parameters, version and inputs for the specific run.
 }
 \examples{
 x <- system.file("extdata/COLO829-replay.json.gz", package = "dracarys")
-read_replay(x)
+(replay <- read_replay(x))
 
 }

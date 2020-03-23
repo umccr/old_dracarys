@@ -7,7 +7,7 @@
 read_wgs_contig_coverage(x, keep_alt = FALSE)
 }
 \arguments{
-\item{x}{Path to \code{wgs_contig_mean_cov_<phenotype>.csv} file.}
+\item{x}{Path to \verb{wgs_contig_mean_cov_<phenotype>.csv} file.}
 
 \item{keep_alt}{Keep the ALT + Mito chromosomes?}
 }
@@ -21,7 +21,7 @@ tibble with following columns:
 }
 }
 \description{
-Reads the \code{wgs_contig_mean_cov_<phenotype>.csv} file, which contains
+Reads the \verb{wgs_contig_mean_cov_<phenotype>.csv} file, which contains
 the estimated coverage for all contigs, and an autosomal estimated coverage.
 Columns are:
 \itemize{
@@ -35,6 +35,7 @@ Columns are:
 x <- system.file("extdata/COLO829.wgs_contig_mean_cov_normal.csv.gz", package = "dracarys")
 y <- system.file("extdata/COLO829.wgs_contig_mean_cov_tumor.csv.gz", package = "dracarys")
 
-read_wgs_contig_coverage(x)
-read_wgs_contig_coverage(y)
+(cc_x <- read_wgs_contig_coverage(x))
+(cc_y <- read_wgs_contig_coverage(y))
+
 }

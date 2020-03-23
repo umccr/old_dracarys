@@ -32,5 +32,6 @@ POSTFILTER VCF metrics.
 }
 \examples{
 x <- system.file("extdata/COLO829.vc_metrics.csv.gz", package = "dracarys")
-read_varcalling_metrics(x)
+(vm <- read_varcalling_metrics(x))
+
 }

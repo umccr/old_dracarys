@@ -7,7 +7,7 @@
 read_wgs_coverage_metrics(x)
 }
 \arguments{
-\item{x}{Path to \code{wgs_coverage_metrics_<phenotype>.csv} file.}
+\item{x}{Path to \verb{wgs_coverage_metrics_<phenotype>.csv} file.}
 }
 \value{
 tibble with following columns:
@@ -20,13 +20,14 @@ tibble with following columns:
 }
 }
 \description{
-Reads the \code{wgs_coverage_metrics_<phenotype>.csv} file, which contains
+Reads the \verb{wgs_coverage_metrics_<phenotype>.csv} file, which contains
 read depth of coverage metrics.
 }
 \examples{
 x <- system.file("extdata/COLO829.wgs_coverage_metrics_normal.csv.gz", package = "dracarys")
 y <- system.file("extdata/COLO829.wgs_coverage_metrics_tumor.csv.gz", package = "dracarys")
 
-read_wgs_coverage_metrics(x)
-read_wgs_coverage_metrics(y)
+(cm_x <- read_wgs_coverage_metrics(x))
+(cm_y <- read_wgs_coverage_metrics(y))
+
 }

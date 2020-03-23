@@ -7,7 +7,7 @@
 plot_wgs_contig_coverage(xs, top_alt_n = 15)
 }
 \arguments{
-\item{xs}{Character vector containing paths to \code{wgs_contig_mean_cov_<phenotype>.csv} files.}
+\item{xs}{Character vector containing paths to \verb{wgs_contig_mean_cov_<phenotype>.csv} files.}
 
 \item{top_alt_n}{Number of top covered alt contigs to plot per phenotype.}
 }
@@ -15,11 +15,11 @@ plot_wgs_contig_coverage(xs, top_alt_n = 15)
 A ggplot2 object with chromosomes on X axis, and coverage on Y axis.
 }
 \description{
-Plots the \code{wgs_contig_mean_cov_<phenotype>.csv} files.
+Plots the \verb{wgs_contig_mean_cov_<phenotype>.csv} files.
 }
 \examples{
 normal <- system.file("extdata/COLO829.wgs_contig_mean_cov_normal.csv.gz", package = "dracarys")
 tumor <- system.file("extdata/COLO829.wgs_contig_mean_cov_tumor.csv.gz", package = "dracarys")
-
 plot_wgs_contig_coverage(xs = c(tumor, normal))
+
 }
