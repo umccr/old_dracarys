@@ -8,7 +8,6 @@
 #'
 #' @return A list with several elements pointing to DRAGEN output file names.
 #'
-#'
 #' @examples
 #' x <- system.file("extdata/COLO829-replay.json.gz", package = "dracarys")
 #' setup_vars(x)
@@ -22,8 +21,9 @@ setup_vars <- function(x) {
   # - See if there is '--tumor-fastq' in the command line i.e. it's run in T/N mode.
   # - Output directory and file names for mapping/coverage metrics, SNV/SV VCFs etc.
 
+  resdir <- normalizePath(dirname(x))
   nm <- sub("-replay.json.*", "", basename(x))
-  replay <- dracarys::read_replay(x)
+  replay <- read_replay(x)
 
   .replay_info <- function(replay) {
 
@@ -33,11 +33,9 @@ setup_vars <- function(x) {
 
     cl <- replay[["command_line"]]
     tn <- grepl("--tumor-fastq", cl)
-    resdir <- dirname(x)
 
-    tibble::tribble(
-      ~tn, ~vc, ~sv, ~resdir,
-      tn, vc, sv, resdir
+    list(
+      tn = tn, vc = vc, sv = sv
     )
   }
 
@@ -50,22 +48,23 @@ setup_vars <- function(x) {
   }
 
   l <- list(
-    replay_fn = file.path(ri$resdir, glue::glue("{nm}-replay.json")),
-    fraglen_fn = file.path(ri$resdir, glue::glue("{nm}.fragment_length_hist.csv")),
-    map_met_fn = file.path(ri$resdir, glue::glue("{nm}.mapping_metrics.csv")),
-    ploidy_est_fn = file.path(ri$resdir, glue::glue("{nm}.ploidy_estimation_metrics.csv")),
-    time_met_fn = file.path(ri$resdir, glue::glue("{nm}.time_metrics.csv")),
+    name = nm,
+    res_dir = resdir,
+    replay_fn = file.path(resdir, glue::glue("{nm}-replay.json")),
+    fraglen_fn = file.path(resdir, glue::glue("{nm}.fragment_length_hist.csv")),
+    map_met_fn = file.path(resdir, glue::glue("{nm}.mapping_metrics.csv")),
+    ploidy_est_fn = file.path(resdir, glue::glue("{nm}.ploidy_estimation_metrics.csv")),
+    time_met_fn = file.path(resdir, glue::glue("{nm}.time_metrics.csv")),
 
-    cov_contig_fn = file.path(ri$resdir, glue::glue("{nm}.wgs_contig_mean_cov{suffix}.csv")),
-    cov_met_fn = file.path(ri$resdir, glue::glue("{nm}.wgs_coverage_metrics{suffix}.csv")),
-    cov_finehist_fn = file.path(ri$resdir, glue::glue("{nm}.wgs_fine_hist{suffix}.csv")),
+    cov_contig_fn = c(file.path(resdir, glue::glue("{nm}.wgs_contig_mean_cov{suffix}.csv"))),
+    cov_met_fn = c(file.path(resdir, glue::glue("{nm}.wgs_coverage_metrics{suffix}.csv"))),
+    cov_finehist_fn = c(file.path(resdir, glue::glue("{nm}.wgs_fine_hist{suffix}.csv"))),
 
-    vc_met_fn = dplyr::if_else(ri$vc, file.path(ri$resdir, glue::glue("{nm}.vc_metrics.csv")), NA_character_),
-    snv_fn = dplyr::if_else(ri$vc, file.path(ri$resdir, glue::glue("{nm}.hard-filtered.vcf.gz")), NA_character_),
-    sv_fn = dplyr::if_else(ri$sv, file.path(ri$resdir, glue::glue("{nm}.sv.vcf.gz")), NA_character_),
-    info = ri
+    vc_met_fn = dplyr::if_else(ri$vc, file.path(resdir, glue::glue("{nm}.vc_metrics.csv")), NA_character_),
+    snv_fn = dplyr::if_else(ri$vc, file.path(resdir, glue::glue("{nm}.hard-filtered.vcf.gz")), NA_character_),
+    sv_fn = dplyr::if_else(ri$sv, file.path(resdir, glue::glue("{nm}.sv.vcf.gz")), NA_character_)
   )
+
   res <- purrr::set_names(list(l), nm)
   res
 }
-

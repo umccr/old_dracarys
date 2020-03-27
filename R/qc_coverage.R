@@ -142,7 +142,7 @@ plot_wgs_contig_coverage <- function(xs, top_alt_n = 15) {
   assertthat::assert_that(length(top_alt_n) == 1, top_alt_n >= 0, is.numeric(top_alt_n))
 
   cov_contig <-
-    purrr::map(.x = xs, dracarys::read_wgs_contig_coverage, keep_alt = TRUE) %>%
+    purrr::map(.x = xs, read_wgs_contig_coverage, keep_alt = TRUE) %>%
     dplyr::bind_rows()
 
   # Display chr1-22, X, Y at top (M goes to bottom).
@@ -276,7 +276,7 @@ plot_wgs_fine_hist <- function(xs, x_lim = c(0, 300)) {
   assertthat::assert_that(length(x_lim) == 2)
 
   cov <-
-    purrr::map(xs, dracarys::read_wgs_fine_hist) %>%
+    purrr::map(xs, read_wgs_fine_hist) %>%
     dplyr::bind_rows()
 
   cov %>%
@@ -319,7 +319,7 @@ plot_wgs_fine_hist <- function(xs, x_lim = c(0, 300)) {
 plot_wgs_fine_cumsum <- function(xs, y_lim = 0.003) {
   assertthat::assert_that(length(y_lim) == 1)
   cov <-
-    purrr::map(xs, dracarys::read_wgs_fine_hist) %>%
+    purrr::map(xs, read_wgs_fine_hist) %>%
     dplyr::bind_rows() %>%
     dplyr::group_by(.data$label) %>%
     dplyr::mutate(freq = .data$n_loci / sum(.data$n_loci)) %>%
