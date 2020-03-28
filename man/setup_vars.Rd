@@ -19,6 +19,6 @@ expected file names for DRAGEN output.
 }
 \examples{
 x <- system.file("extdata/COLO829-replay.json.gz", package = "dracarys")
-setup_vars(x)
+(v <- setup_vars(x))
 
 }

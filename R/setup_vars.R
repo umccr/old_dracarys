@@ -10,7 +10,15 @@
 #'
 #' @examples
 #' x <- system.file("extdata/COLO829-replay.json.gz", package = "dracarys")
-#' setup_vars(x)
+#' (v <- setup_vars(x))
+#'
+#' @testexamples
+#' expect_equal(class(v), "list")
+#' expect_equal(length(v), 1)
+#' expect_equal(length(v[[1]]), 14)
+#' expect_equal(names(v[[1]]), c("name", "res_dir", "replay_fn", "fraglen_fn", "map_met_fn",
+#' "ploidy_est_fn", "time_met_fn", "cov_contig_fn", "cov_met_fn",
+#' "cov_finehist_fn", "vc_met_fn", "snv_fn", "sv_fn", "steps_run"))
 #'
 #' @export
 setup_vars <- function(x) {
@@ -62,7 +70,9 @@ setup_vars <- function(x) {
 
     vc_met_fn = dplyr::if_else(ri$vc, file.path(resdir, glue::glue("{nm}.vc_metrics.csv")), NA_character_),
     snv_fn = dplyr::if_else(ri$vc, file.path(resdir, glue::glue("{nm}.hard-filtered.vcf.gz")), NA_character_),
-    sv_fn = dplyr::if_else(ri$sv, file.path(resdir, glue::glue("{nm}.sv.vcf.gz")), NA_character_)
+    sv_fn = dplyr::if_else(ri$sv, file.path(resdir, glue::glue("{nm}.sv.vcf.gz")), NA_character_),
+
+    steps_run = ri
   )
 
   res <- purrr::set_names(list(l), nm)
