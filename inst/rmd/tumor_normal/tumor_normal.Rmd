@@ -37,9 +37,9 @@ knitr::opts_chunk$set(
 params <- function(x) {
   paths <- list(
     local = list(
-      name = "COLO829_TN",
-      in_dir = normalizePath(here::here("nogit/COLO829/COLO829_TN")),
-      out_dir = normalizePath(here::here("nogit/COLO829/COLO829_TN/dracarys")))
+      name = "SEQCII",
+      in_dir = here::here("nogit/SEQCII/SEQCII_NT100"),
+      out_dir = here::here("nogit/SEQCII/SEQCII_NT100/dracarys"))
   )
   paths[[x]]
 }
@@ -59,6 +59,7 @@ suppressPackageStartupMessages(library(dracarys))
 suppressPackageStartupMessages(library(DT))
 suppressPackageStartupMessages(library(fs))
 suppressPackageStartupMessages(library(glue))
+suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(jsonlite))
 suppressPackageStartupMessages(library(kableExtra))
 suppressPackageStartupMessages(library(patchwork))
@@ -69,25 +70,27 @@ suppressPackageStartupMessages(library(tidyr))
 ```
 
 ```{r var_setup}
-in_dir <- params$in_dir
-out_dir <- params$out_dir
-nm <- params$name
+in_dir <- normalizePath(params$in_dir)
+if (!dir.exists(params$out_dir)) {
+  dir.create(params$out_dir)
+}
+out_dir <- normalizePath(params$out_dir)
 
 replay <- list.files(in_dir, pattern = "-replay.json", full.names = TRUE, recursive = TRUE)
-v <- dracarys::setup_vars(replay)
+v <- setup_vars(replay)
 
 eval_steps <- list(
-  sv = v[[1]][["info"]][["sv"]],
-  varcall = v[[1]][["info"]][["vc"]]
+  sv = v[[1]][["steps_run"]][["sv"]],
+  varcall = v[[1]][["steps_run"]][["vc"]]
 )
 ```
 
 
 `r if (eval_steps$sv) { c("### Structural Variants {#structuralvars}") }`
 
-```{r sv_prep, eval=eval_steps$sv, message=F, warning=F}
+```{r sv_prep, eval=eval_steps$sv, message=T, warning=T}
 manta_vcf <- v[[1]][["sv_fn"]]
-sv_vcf <- rock::prep_manta_vcf(manta_vcf, filter_pass = TRUE)$sv
+sv_vcf <- rock::prep_manta_vcf(manta_vcf, filter_pass = TRUE)
 
 circos_png <- dracarys::plot_circos(
   manta = manta_vcf,
@@ -95,7 +98,7 @@ circos_png <- dracarys::plot_circos(
   outdir = file.path(out_dir, "circos")
 )
 
-sv_counts <- sv_vcf %>%
+sv_counts <- sv_vcf$sv %>%
   dplyr::pull(svtype) %>%
   table(useNA = "ifany") %>%
   addmargins() %>%
@@ -114,9 +117,8 @@ sv_counts %>%
                        color = "white", background = "#2c3e50")
 
 knitr::include_graphics(circos_png)
+plot_sv_contig_counts(sv_vcf)
 ```
-
-
 
 ### QC {.tabset .tabset-fade}
 
