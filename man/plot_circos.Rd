@@ -2,7 +2,7 @@
 % Please edit documentation in R/sv.R
 \name{plot_circos}
 \alias{plot_circos}
-\title{Plot SVs}
+\title{Plot SVs in Circos}
 \usage{
 plot_circos(
   manta,
@@ -30,12 +30,15 @@ plot_circos(
 Path to circos PNG file output by the Perl circos program.
 }
 \description{
-Plots the SVs found in the \code{sv.vcf.gz} VCF file output by DRAGEN.
+Generates a Circos plot of  the SVs found in the \code{sv.vcf.gz} VCF file output
+by DRAGEN.
 }
 \examples{
 \dontrun{
+manta_sv <- system.file("extdata/COLO829.sv.vcf.gz", package = "dracarys")
+
 circos_png <- plot_circos(
-   manta = "path/to/sample.sv.vcf",
+   manta = manta_sv,
    circos_path = "path/to/bin_with_circos",
    outdir = file.path("circos"))
 }
