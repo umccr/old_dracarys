@@ -77,7 +77,7 @@ if (!dir.exists(params$out_dir)) {
 out_dir <- normalizePath(params$out_dir)
 
 replay <- list.files(in_dir, pattern = "-replay.json", full.names = TRUE, recursive = TRUE)
-v <- setup_vars(replay)
+v <- dracarys::setup_vars(replay)
 
 eval_steps <- list(
   sv = v[[1]][["steps_run"]][["sv"]],
@@ -88,45 +88,62 @@ eval_steps <- list(
 
 `r if (eval_steps$sv) { c("### Structural Variants {#structuralvars}") }`
 
-```{r sv_prep, eval=eval_steps$sv, message=T, warning=T}
-manta_vcf <- v[[1]][["sv_fn"]]
-sv_vcf <- rock::prep_manta_vcf(manta_vcf, filter_pass = TRUE)
+```{r sv_prep, eval=eval_steps$sv, message=F, warning=T}
+sv_fn <- v[[1]][["sv_fn"]]
 
 circos_png <- dracarys::plot_circos(
-  manta = manta_vcf,
+  manta = sv_fn,
   circos_path = "/Users/pdiakumis/my_apps/miniconda/envs/woof/bin",
   outdir = file.path(out_dir, "circos")
 )
 
-sv_counts <- sv_vcf$sv %>%
-  dplyr::pull(svtype) %>%
+sv_tab <- dracarys::sv_table(sv_fn)
+sv_counts <- sv_tab$sv %>%
+  dplyr::pull(SVTYPE) %>%
   table(useNA = "ifany") %>%
   addmargins() %>%
   tibble::as_tibble() %>%
   purrr::set_names(c("svtype", "count")) %>%
-  dplyr::mutate(svtype = ifelse(svtype == "Sum", "Total", svtype))
+  dplyr::mutate(svtype = ifelse(svtype == "Sum", "Total",
+                                ifelse(svtype == "BND", "BND (pairs)", svtype)))
+
 ```
 
 ```{r sv_results, eval=eval_steps$sv, out.width="40%"}
 sv_counts %>%
-  knitr::kable(format = "html", col.names = NULL, caption = "SV Types") %>%
+  knitr::kable(format = "html", col.names = NULL, caption = "SV Type Counts") %>%
   kableExtra::kable_styling(full_width = FALSE, position = "float_left",
                             bootstrap_options = c("striped", "bordered", "condensed", "hover")) %>%
-  kableExtra::column_spec(1, bold = TRUE) %>%
+  # kableExtra::column_spec(1, bold = TRUE) %>%
   kableExtra::row_spec(nrow(sv_counts), bold = T,
                        color = "white", background = "#2c3e50")
 
 knitr::include_graphics(circos_png)
-plot_sv_contig_counts(sv_vcf)
+dracarys::plot_sv_contig_counts(sv_tab)
+
+sv_tab$sv %>%
+  dplyr::select(chrom1, pos1, chrom2, pos2, svtype = SVTYPE,
+                filter, score = SOMATICSCORE, imprecise = IMPRECISE,
+                CIPOS, CIGAR, bnd_depth = BND_DEPTH, bnd_depth_mate = MATE_BND_DEPTH,
+                dplyr::everything()) %>%
+  DT::datatable(rownames = FALSE,
+                caption = "Structural Variants",
+                class = "cell-border display compact",
+                extensions = c("Scroller", "KeyTable"),
+                options = list(
+                  scroller = TRUE, scrollY = 400, scrollX = TRUE, keys = TRUE, dom = 'lfrtip')) %>%
+  DT::formatCurrency(c("pos1", "pos2"),
+                     currency = "", interval = 3, mark = ",", digits = 0)
+
 ```
 
 ### QC {.tabset .tabset-fade}
 
 #### Coverage Plots
 ```{r qc_cov_contig_plot, fig.width=14, fig.height=10}
-fine_hist <- plot_wgs_fine_hist(xs = v[[1]][["cov_finehist_fn"]])
-fine_cumsum <- plot_wgs_fine_cumsum(xs = v[[1]][["cov_finehist_fn"]])
-contig_cov <- plot_wgs_contig_coverage(xs = v[[1]][["cov_contig_fn"]])
+fine_hist <- dracarys::plot_wgs_fine_hist(xs = v[[1]][["cov_finehist_fn"]])
+fine_cumsum <- dracarys::plot_wgs_fine_cumsum(xs = v[[1]][["cov_finehist_fn"]])
+contig_cov <- dracarys::plot_wgs_contig_coverage(xs = v[[1]][["cov_contig_fn"]])
 
 (fine_hist / fine_cumsum) | contig_cov
 ```
