@@ -38,8 +38,7 @@ plot_circos <- function(manta, circos_path, outdir, outfile = "circos.png", geno
 #' Plots number of SV breakpoints per contig for mate1 and mate2 of each
 #' SV event.
 #'
-#' @param manta Path to `sv.vcf.gz` file or object of class 'sv' from the
-#' `rock` package.
+#' @param manta Path to `sv.vcf.gz` file or object of class 'sv'.
 #'
 #' @return A ggplot2 object plotting number of SV breakpoints per contig for
 #' mate1 and mate2 of each SV event.
@@ -48,15 +47,15 @@ plot_circos <- function(manta, circos_path, outdir, outfile = "circos.png", geno
 #' manta <- system.file("extdata/COLO829.sv.vcf.gz", package = "dracarys")
 #' plot_sv_contig_counts(manta)
 #'
-#' manta_rock <- rock::prep_manta_vcf(manta, filter_pass = TRUE)
-#' plot_sv_contig_counts(manta_rock)
+#' manta_table <- dracarys::sv_table(manta)
+#' plot_sv_contig_counts(manta_table)
 #'
 #' @export
 plot_sv_contig_counts <- function(manta) {
   if (inherits(manta, "sv")) {
     sv <- manta$sv
   } else {
-    sv <- rock::prep_manta_vcf(manta, filter_pass = TRUE)$sv
+    sv <- sv_table(manta)$sv
   }
 
   noalt_chrom <- c(1:22, "X", "Y", "M")
@@ -94,8 +93,7 @@ plot_sv_contig_counts <- function(manta) {
 
 #' Generate Table with Structural Variants
 #'
-#' @param manta Path to `sv.vcf.gz` file or object of class 'sv' from the
-#' `rock` package.
+#' @param manta Path to `sv.vcf.gz` file or object of class 'sv'.
 #'
 #' @return A tibble with structural variants
 #'
@@ -127,7 +125,7 @@ sv_table <- function(manta) {
     dplyr::arrange(.data$num)
 
   # bring them all together
-  DF <- tibble::tibble(chrom1 = as.character(x$vcf$CHROM),
+  DF <- tibble::tibble(chrom1 = as.character(sub("chr", "", x$vcf$CHROM)),
                        pos1 = as.integer(x$vcf$POS),
                        pos2 = as.integer(x$vcf$END),
                        filter = x$vcf$FILTER,
@@ -157,7 +155,8 @@ sv_table <- function(manta) {
                   .data$pos2, .data$id, .data$MATEID, .data$SVTYPE, .data$filter, dplyr::everything())
 
   if (length(orphan_mates) > 0) {
-    warning(glue::glue("The following {length(orphan_mates)} orphan BND mates are removed:\n",
+    warning(glue::glue("The following {length(orphan_mates)} orphan BND ",
+                       "mates are removed:\n",
                        paste(orphan_mates, collapse = "\n")))
   }
 
@@ -174,7 +173,6 @@ sv_table <- function(manta) {
   sv <- df_other %>%
     dplyr::bind_rows(df_bnd)
 
-
-  sv
+  structure(list(sv = sv), class = "sv")
 
 }

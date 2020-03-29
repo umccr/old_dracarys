@@ -7,8 +7,7 @@
 plot_sv_contig_counts(manta)
 }
 \arguments{
-\item{manta}{Path to \code{sv.vcf.gz} file or object of class 'sv' from the
-\code{rock} package.}
+\item{manta}{Path to \code{sv.vcf.gz} file or object of class 'sv'.}
 }
 \value{
 A ggplot2 object plotting number of SV breakpoints per contig for
@@ -22,7 +21,7 @@ SV event.
 manta <- system.file("extdata/COLO829.sv.vcf.gz", package = "dracarys")
 plot_sv_contig_counts(manta)
 
-manta_rock <- rock::prep_manta_vcf(manta, filter_pass = TRUE)
-plot_sv_contig_counts(manta_rock)
+manta_table <- dracarys::sv_table(manta)
+plot_sv_contig_counts(manta_table)
 
 }
