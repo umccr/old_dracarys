@@ -23,7 +23,7 @@
 #' }
 #' @export
 plot_circos <- function(manta, circos_path, outdir, outfile = "circos.png", genome = "hg38", filter_pass = TRUE) {
-  sv_vcf_circos <- rock::circos_prep(manta = manta, genome = genome, outdir = outdir, filter_pass = filter_pass)
+  rock::circos_prep(manta = manta, genome = genome, outdir = outdir, filter_pass = filter_pass)
   export_path <- glue::glue("export PATH={circos_path}:$PATH")
   cmd <- glue::glue("{export_path} && ",
                     "circos -nosvg -conf {outdir}/circos.conf ",
@@ -54,15 +54,15 @@ plot_circos <- function(manta, circos_path, outdir, outfile = "circos.png", geno
 #' @export
 plot_sv_contig_counts <- function(manta) {
   if (inherits(manta, "sv")) {
-    sv_vcf <- manta$sv
+    sv <- manta$sv
   } else {
-    sv_vcf <- rock::prep_manta_vcf(manta, filter_pass = TRUE)$sv
+    sv <- rock::prep_manta_vcf(manta, filter_pass = TRUE)$sv
   }
 
   noalt_chrom <- c(1:22, "X", "Y", "M")
   alt_label <- "ALT"
 
-  d <- sv_vcf %>%
+  d <- sv %>%
     dplyr::select(.data$chrom1, .data$chrom2) %>%
     tidyr::pivot_longer(cols = c(.data$chrom1, .data$chrom2), names_to = "mate", values_to = "chromosome") %>%
     dplyr::mutate(is_alt = !.data$chromosome %in% noalt_chrom,
@@ -90,4 +90,91 @@ plot_sv_contig_counts <- function(manta) {
       axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1, size = 10),
       plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"),
       panel.spacing = ggplot2::unit(2, "lines"))
+}
+
+#' Generate Table with Structural Variants
+#'
+#' @param manta Path to `sv.vcf.gz` file or object of class 'sv' from the
+#' `rock` package.
+#'
+#' @return A tibble with structural variants
+#'
+#' @examples
+#' manta <- system.file("extdata/COLO829.sv.vcf.gz", package = "dracarys")
+#' sv_table(manta)
+#'
+#' @export
+sv_table <- function(manta) {
+  x <- bedr::read.vcf(manta, split.info = TRUE, verbose = FALSE)
+  standard_vcf_cols <- c("CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "FORMAT")
+  format_fields_description <- structure(x$header$FORMAT[, "Description"], names = x$header$FORMAT[, "ID"])
+  info_fields_description <- structure(x$header$INFO[, "Description"], names = x$header$INFO[, "ID"])
+  req_format_fields <- c("PR", "SR")
+  req_info_fields <- c("MATEID", "SVTYPE", "SOMATICSCORE", "IMPRECISE", "CIPOS",
+                       "CIGAR", "BND_DEPTH", "MATE_BND_DEPTH")
+  sample_nms <- setdiff(colnames(x$vcf), c(standard_vcf_cols, names(info_fields_description)))
+
+  assertthat::assert_that(length(sample_nms) > 0)
+  assertthat::assert_that(all(req_format_fields == names(format_fields_description)))
+  assertthat::assert_that(all(req_info_fields %in% names(info_fields_description)))
+
+  sample_cols <- tibble::as_tibble(x$vcf[sample_nms]) %>%
+    dplyr::mutate(num = dplyr::row_number()) %>%
+    tidyr::pivot_longer(cols = sample_nms, names_to = "sample") %>%
+    tidyr::separate(col = .data$value, into = req_format_fields, sep = ":", fill = "right") %>%
+    tidyr::pivot_longer(cols = req_format_fields, names_to = "field") %>%
+    tidyr::pivot_wider(names_from = c(.data$sample, .data$field), values_from = .data$value, id_cols = .data$num) %>%
+    dplyr::arrange(.data$num)
+
+  # bring them all together
+  DF <- tibble::tibble(chrom1 = as.character(x$vcf$CHROM),
+                       pos1 = as.integer(x$vcf$POS),
+                       pos2 = as.integer(x$vcf$END),
+                       filter = x$vcf$FILTER,
+                       id = x$vcf$ID) %>%
+    dplyr::bind_cols(x$vcf[req_info_fields]) %>%
+    dplyr::bind_cols(sample_cols) %>%
+    dplyr::select(.data$num, dplyr::everything())
+
+  # BNDs
+  df_bnd <- DF %>%
+    dplyr::filter(.data$SVTYPE == "BND") %>%
+    dplyr::bind_cols(., .[match(.$id, .$MATEID), c("chrom1", "pos1")]) %>%
+    dplyr::rename(chrom2 = .data$chrom11) %>%
+    dplyr::mutate(pos2 = ifelse(is.na(.data$pos2), .data$pos11, .data$pos2),
+                  bndid = substring(.data$id, nchar(.data$id)))
+
+  orphan_mates <- df_bnd %>%
+    dplyr::filter(.data$chrom2 %in% NA) %>%
+    dplyr::mutate(orphan = paste0(.data$chrom1, ":", .data$pos1)) %>%
+    dplyr::pull(.data$orphan)
+
+  df_bnd <- df_bnd %>%
+    dplyr::filter(!is.na(.data$chrom2)) %>%
+    dplyr::filter(.data$bndid == "1") %>%
+    dplyr::select(-c(.data$bndid, .data$pos11)) %>%
+    dplyr::select(.data$chrom1, .data$pos1, .data$chrom2,
+                  .data$pos2, .data$id, .data$MATEID, .data$SVTYPE, .data$filter, dplyr::everything())
+
+  if (length(orphan_mates) > 0) {
+    warning(glue::glue("The following {length(orphan_mates)} orphan BND mates are removed:\n",
+                       paste(orphan_mates, collapse = "\n")))
+  }
+
+  assertthat::assert_that(rock:::.manta_proper_pairs(df_bnd$id, df_bnd$MATEID))
+
+  # Non-BNDs
+  df_other <- DF %>%
+    dplyr::filter(.data$SVTYPE != "BND") %>%
+    dplyr::mutate(chrom2 = .data$chrom1) %>%
+    dplyr::select(.data$chrom1, .data$pos1, .data$chrom2, .data$pos2,
+                  .data$id, .data$MATEID, .data$SVTYPE, .data$filter, dplyr::everything())
+
+  # All together now
+  sv <- df_other %>%
+    dplyr::bind_rows(df_bnd)
+
+
+  sv
+
 }
