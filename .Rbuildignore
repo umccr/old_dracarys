@@ -1,8 +1,9 @@
 ^bump\.sh$
 ^deploy$
+^dracarys\.Rproj$
 ^LICENSE\.md$
 ^nogit$
 ^README\.Rmd$
+^\.Rhistory$
 ^\.Rproj\.user$
 ^\.travis\.yml$
-^dracarys\.Rproj$

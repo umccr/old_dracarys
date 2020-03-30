@@ -12,7 +12,8 @@ output:
 params:
   indir: "/path/to/dragen/results"
   outdir: "/path/to/output/dracarys"
-title: "`r glue::glue('DRAGEN Results')`"
+  name: "SAMPLE_FOO"
+title: "`r glue::glue('DRAGEN Results for {params$name}')`"
 description: "Results from DRAGEN analysis"
 ---
 
@@ -37,7 +38,8 @@ params <- function(x) {
   paths <- list(
     local = list(
       indir = here::here("nogit/SEQCII/SEQCII_NT100"),
-      outdir = here::here("nogit/SEQCII/SEQCII_NT100/dracarys"))
+      outdir = here::here("nogit/SEQCII/SEQCII_NT100/dracarys"),
+      name = "SEQCII_100")
   )
   paths[[x]]
 }
@@ -68,11 +70,8 @@ suppressPackageStartupMessages(library(tidyr))
 ```
 
 ```{r var_setup}
-indir <- normalizePath(params$indir)
-if (!dir.exists(params$outdir)) {
-  dir.create(params$outdir)
-}
-outdir <- normalizePath(params$outdir)
+indir <- params$indir
+outdir <- params$outdir
 
 replay <- list.files(indir, pattern = "-replay.json", full.names = TRUE, recursive = TRUE)
 v <- dracarys::setup_vars(replay)
@@ -112,7 +111,6 @@ sv_counts %>%
   knitr::kable(format = "html", col.names = NULL, caption = "SV Type Counts") %>%
   kableExtra::kable_styling(full_width = FALSE, position = "float_left",
                             bootstrap_options = c("striped", "bordered", "condensed", "hover")) %>%
-  # kableExtra::column_spec(1, bold = TRUE) %>%
   kableExtra::row_spec(nrow(sv_counts), bold = T,
                        color = "white", background = "#2c3e50")
 
@@ -120,19 +118,21 @@ knitr::include_graphics(circos_png)
 dracarys::plot_sv_contig_counts(sv_tab)
 
 sv_tab$sv %>%
+  dplyr::select(-num) %>%
   dplyr::select(chrom1, pos1, chrom2, pos2, svtype = SVTYPE,
                 filter, score = SOMATICSCORE, imprecise = IMPRECISE,
                 CIPOS, CIGAR, bnd_depth = BND_DEPTH, bnd_depth_mate = MATE_BND_DEPTH,
                 dplyr::everything()) %>%
+  dplyr::mutate_at(dplyr::vars(chrom1, chrom2, svtype, filter, imprecise), as.factor) %>%
   DT::datatable(rownames = FALSE,
                 caption = "Structural Variants",
+                filter = list(position = "top", clear = FALSE, plain = TRUE),
                 class = "cell-border display compact",
                 extensions = c("Scroller", "KeyTable"),
                 options = list(
                   scroller = TRUE, scrollY = 400, scrollX = TRUE, keys = TRUE, dom = 'lfrtip')) %>%
   DT::formatCurrency(c("pos1", "pos2"),
                      currency = "", interval = 3, mark = ",", digits = 0)
-
 ```
 
 ### QC {.tabset .tabset-fade}
