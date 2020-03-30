@@ -10,10 +10,9 @@ output:
   rmdformats::material:
     highlight: kate
 params:
-  name: "COLO829"
-  in_dir: "/path/to/dragen/results"
-  out_dir: "/path/to/output/dracarys"
-title: "`r glue::glue('DRAGEN Results for {params$name}')`"
+  indir: "/path/to/dragen/results"
+  outdir: "/path/to/output/dracarys"
+title: "`r glue::glue('DRAGEN Results')`"
 description: "Results from DRAGEN analysis"
 ---
 
@@ -37,9 +36,8 @@ knitr::opts_chunk$set(
 params <- function(x) {
   paths <- list(
     local = list(
-      name = "SEQCII",
-      in_dir = here::here("nogit/SEQCII/SEQCII_NT100"),
-      out_dir = here::here("nogit/SEQCII/SEQCII_NT100/dracarys"))
+      indir = here::here("nogit/SEQCII/SEQCII_NT100"),
+      outdir = here::here("nogit/SEQCII/SEQCII_NT100/dracarys"))
   )
   paths[[x]]
 }
@@ -70,13 +68,13 @@ suppressPackageStartupMessages(library(tidyr))
 ```
 
 ```{r var_setup}
-in_dir <- normalizePath(params$in_dir)
-if (!dir.exists(params$out_dir)) {
-  dir.create(params$out_dir)
+indir <- normalizePath(params$indir)
+if (!dir.exists(params$outdir)) {
+  dir.create(params$outdir)
 }
-out_dir <- normalizePath(params$out_dir)
+outdir <- normalizePath(params$outdir)
 
-replay <- list.files(in_dir, pattern = "-replay.json", full.names = TRUE, recursive = TRUE)
+replay <- list.files(indir, pattern = "-replay.json", full.names = TRUE, recursive = TRUE)
 v <- dracarys::setup_vars(replay)
 
 eval_steps <- list(
@@ -94,7 +92,7 @@ sv_fn <- v[[1]][["sv_fn"]]
 circos_png <- dracarys::plot_circos(
   manta = sv_fn,
   circos_path = "/Users/pdiakumis/my_apps/miniconda/envs/woof/bin",
-  outdir = file.path(out_dir, "circos")
+  outdir = file.path(outdir, "circos")
 )
 
 sv_tab <- dracarys::sv_table(sv_fn)
