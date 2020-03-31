@@ -16,6 +16,7 @@ def main(input, prefix, outdir):
         and a second TSV with VCF sample names.
     """
     # Set up variant/sample output files
+    outdir = os.path.join(outdir, "snv_table")
     safe_mkdir(outdir)
     variants_outfile = os.path.join(outdir, f"{prefix}_variants.tsv")
     samples_outfile = os.path.join(outdir, f"{prefix}_samples.tsv")

@@ -23,6 +23,9 @@
 #' @export
 snv_table <- function(x, prefix, outdir, env_path) {
 
+  if (!dir.exists(outdir)) {
+    dir.create(outdir, recursive = TRUE, showWarnings = TRUE)
+  }
   outdir <- normalizePath(outdir)
   .snv_table_run <- function() {
     assertthat::assert_that(file.exists(x), length(prefix) == 1, nchar(prefix) > 0)
@@ -39,12 +42,12 @@ snv_table <- function(x, prefix, outdir, env_path) {
     CHROM = "c", START = "i", VARTYPE = "c", FILTER = "c", DP = "d", MQ = "d", TLOD = "d", NLOD = "d",
     GT1 = "c", GT2 = "c", AF1 = "c", AF2 = "c", AD1 = "c", AD2 = "c", DP1 = "d", DP2 = "d")
 
-  test1 <- readr::read_lines(glue::glue("{outdir}/{prefix}_variants.tsv"), n_max = 1)
-  test2 <- readr::read_lines(glue::glue("{outdir}/{prefix}_samples.tsv"), n_max = 1)
+  test1 <- readr::read_lines(glue::glue("{outdir}/snv_table/{prefix}_variants.tsv"), n_max = 1)
+  test2 <- readr::read_lines(glue::glue("{outdir}/snv_table/{prefix}_samples.tsv"), n_max = 1)
   assertthat::assert_that(test1 == paste(names(ctypes), collapse = "\t"),
                           test2 == paste(c("col1", "col2"), collapse = "\t"))
-  variants <- readr::read_tsv(glue::glue("{outdir}/{prefix}_variants.tsv"), col_types = paste(ctypes, collapse = ""))
-  samples <- readr::read_tsv(glue::glue("{outdir}/{prefix}_samples.tsv"), col_types = "cc")
+  variants <- readr::read_tsv(glue::glue("{outdir}/snv_table/{prefix}_variants.tsv"), col_types = paste(ctypes, collapse = ""))
+  samples <- readr::read_tsv(glue::glue("{outdir}/snv_table/{prefix}_samples.tsv"), col_types = "cc")
 
   list(variants = variants,
        samples = samples)

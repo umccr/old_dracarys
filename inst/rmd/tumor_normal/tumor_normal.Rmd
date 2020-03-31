@@ -57,7 +57,6 @@ render_me()
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(dracarys))
 suppressPackageStartupMessages(library(DT))
-suppressPackageStartupMessages(library(fs))
 suppressPackageStartupMessages(library(glue))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(jsonlite))
@@ -65,13 +64,13 @@ suppressPackageStartupMessages(library(kableExtra))
 suppressPackageStartupMessages(library(patchwork))
 suppressPackageStartupMessages(library(purrr))
 suppressPackageStartupMessages(library(readr))
-suppressPackageStartupMessages(library(rock))
 suppressPackageStartupMessages(library(tidyr))
 ```
 
 ```{r var_setup}
 indir <- params$indir
 outdir <- params$outdir
+nm <- params$name
 
 replay <- list.files(indir, pattern = "-replay.json", full.names = TRUE, recursive = TRUE)
 v <- dracarys::setup_vars(replay)
@@ -82,15 +81,14 @@ eval_steps <- list(
 )
 ```
 
-
 `r if (eval_steps$sv) { c("### Structural Variants {#structuralvars}") }`
 
-```{r sv_prep, eval=eval_steps$sv, message=F, warning=T}
+```{r sv_prep, eval=eval_steps$sv, message=F, warning=F}
 sv_fn <- v[[1]][["sv_fn"]]
 
 circos_png <- dracarys::plot_circos(
   manta = sv_fn,
-  circos_path = "/Users/pdiakumis/my_apps/miniconda/envs/woof/bin",
+  env_path = "~/my_apps/miniconda/envs/dracarys/bin",
   outdir = file.path(outdir, "circos")
 )
 
@@ -133,6 +131,64 @@ sv_tab$sv %>%
                   scroller = TRUE, scrollY = 400, scrollX = TRUE, keys = TRUE, dom = 'lfrtip')) %>%
   DT::formatCurrency(c("pos1", "pos2"),
                      currency = "", interval = 3, mark = ",", digits = 0)
+```
+
+`r if (eval_steps$varcall) { c("### Single Nucleotide/INDEL Variants {#snvars}") }`
+
+```{r snv_prep, eval=eval_steps$snv}
+snv_fn <- v[[1]][["snv_fn"]]
+snv_tab <- dracarys::snv_table(snv_fn, prefix = nm, outdir = outdir, env_path = "~/my_apps/miniconda/envs/dracarys/bin")
+snv_samples <- snv_tab$samples
+
+standard_chr <- paste0("chr", c(1:22, "X", "Y", "M"))
+snv_vars <- snv_tab$variants %>%
+  dplyr::rename(chr = CHROM, start = START, vartype = VARTYPE, filter = FILTER) %>%
+  dplyr::mutate(filter = ifelse(filter == "None", "PASS", "FAIL"),
+                filter = factor(filter, levels = c("PASS", "FAIL")),
+                chr = ifelse(chr %in% standard_chr, chr, "ALT"),
+                chr = factor(chr, levels = c(standard_chr, "ALT")))
+```
+
+```{r snv_results, eval=eval_steps$snv, fig.width=16, fig.height=8}
+# summarise SNVs
+snv_vars_summary <- snv_vars %>%
+  dplyr::group_by(filter, vartype) %>%
+  dplyr::count() %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate_if(is.factor, as.character)
+
+snv_vars_summary %>%
+  dplyr::bind_rows(
+    tibble::tribble(
+      ~filter, ~vartype, ~n,
+      "", "Total", sum(snv_vars_summary$n))) %>%
+  knitr::kable(format = "html", col.names = NULL, caption = "SNV/INDEL Counts", format.args = list(big.mark = ",")) %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "float_left",
+                            bootstrap_options = c("striped", "bordered", "condensed", "hover")) %>%
+  kableExtra::row_spec(nrow(snv_vars_summary) + 1, bold = T,
+                       color = "white", background = "#2c3e50")
+
+snv_vars %>%
+  dplyr::group_by(chr, filter, vartype) %>%
+  dplyr::count() %>%
+  ggplot2::ggplot(aes(x = chr, y = n, group = vartype)) +
+  ggplot2::geom_point() +
+  ggplot2::geom_line() +
+  ggplot2::scale_x_discrete(drop = FALSE) +
+  ggplot2::scale_y_continuous(
+    breaks = scales::pretty_breaks(n = 10), limits = c(0, NA), expand = c(0, 0), labels = scales::comma) +
+  ggplot2::theme_minimal() +
+  ggplot2::labs(title = "Count of PASS/FAIL SNVs/INDELs per Chromosome") +
+  ggplot2::xlab("Chromosome") +
+  ggplot2::ylab("Count") +
+  ggplot2::theme(
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(angle = 45, vjust = 1, hjust = 1, size = 10),
+    plot.title = ggplot2::element_text(colour = "#2c3e50", size = 14, face = "bold"),
+    panel.spacing = ggplot2::unit(2, "lines")) +
+  facet_grid(filter~vartype, scales = "free")
+
+# snv_tab_cap <- glue::glue("Single Nucleotide/INDEL Variants.\nSample1: {snv_samples$col1}; Sample2: {snv_samples$col2}")
 ```
 
 ### QC {.tabset .tabset-fade}
