@@ -1,4 +1,5 @@
 ^bump\.sh$
+^conda$
 ^deploy$
 ^dracarys\.Rproj$
 ^LICENSE\.md$
@@ -7,3 +8,4 @@
 ^\.Rhistory$
 ^\.Rproj\.user$
 ^\.travis\.yml$
+^\.vscode$

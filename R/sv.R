@@ -4,7 +4,7 @@
 #' by DRAGEN.
 #'
 #' @param manta Path to `sv.vcf.gz` file.
-#' @param circos_path Path to the directory containing the circos binary (see examples).
+#' @param conda_env_path Path to the directory containing the circos binary (see examples).
 #' @param outdir Directory to write the output circos file along with the configs used.
 #' @param outfile Name of PNG file.
 #' @param genome Genome assembly used to generate the SV calls.
@@ -18,13 +18,13 @@
 #'
 #' circos_png <- plot_circos(
 #'    manta = manta_sv,
-#'    circos_path = "path/to/bin_with_circos",
+#'    conda_env_path = "path/to/bin_with_circos",
 #'    outdir = file.path("circos"))
 #' }
 #' @export
-plot_circos <- function(manta, circos_path, outdir, outfile = "circos.png", genome = "hg38", filter_pass = TRUE) {
+plot_circos <- function(manta, conda_env_path, outdir, outfile = "circos.png", genome = "hg38", filter_pass = TRUE) {
   rock::circos_prep(manta = manta, genome = genome, outdir = outdir, filter_pass = filter_pass)
-  export_path <- glue::glue("export PATH={circos_path}:$PATH")
+  export_path <- glue::glue("export PATH={conda_env_path}:$PATH")
   cmd <- glue::glue("{export_path} && ",
                     "circos -nosvg -conf {outdir}/circos.conf ",
                     "-outputdir {outdir} -outputfile {outfile}")

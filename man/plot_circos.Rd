@@ -6,7 +6,7 @@
 \usage{
 plot_circos(
   manta,
-  circos_path,
+  conda_env_path,
   outdir,
   outfile = "circos.png",
   genome = "hg38",
@@ -16,7 +16,7 @@ plot_circos(
 \arguments{
 \item{manta}{Path to \code{sv.vcf.gz} file.}
 
-\item{circos_path}{Path to the directory containing the circos binary (see examples).}
+\item{conda_env_path}{Path to the directory containing the circos binary (see examples).}
 
 \item{outdir}{Directory to write the output circos file along with the configs used.}
 
@@ -39,7 +39,7 @@ manta_sv <- system.file("extdata/COLO829.sv.vcf.gz", package = "dracarys")
 
 circos_png <- plot_circos(
    manta = manta_sv,
-   circos_path = "path/to/bin_with_circos",
+   conda_env_path = "path/to/bin_with_circos",
    outdir = file.path("circos"))
 }
 }
