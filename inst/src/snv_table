@@ -1,0 +1,94 @@
+#!/usr/bin/env python
+
+import click
+import os
+import sys
+import re
+from cyvcf2 import VCF
+
+
+@click.command()
+@click.option("-i", "--input", "input", type=click.Path(exists=True), required=True, help="VCF input with DRAGEN T/N SNVs.")
+@click.option("-p", "--prefix", "prefix", required=True, help="Prefix for output variant and sample files.")
+@click.option("-o", "--outdir", "outdir", type=click.Path(), required=True, help="Output directory for results.")
+def main(input, prefix, outdir):
+    """ Read in a DRAGEN SNV VCF (`hard-filtered.vcf.gz`) and output one TSV with main variant columns
+        and a second TSV with VCF sample names.
+    """
+    # Set up variant/sample output files
+    safe_mkdir(outdir)
+    variants_outfile = os.path.join(outdir, f"{prefix}_variants.tsv")
+    samples_outfile = os.path.join(outdir, f"{prefix}_samples.tsv")
+    # Initialise VCF object, and grab sample name list
+    vcf = VCF(input, gts012=True)
+    vcfsamples = vcf.samples
+
+    # Write sample names
+    with open(samples_outfile, "w") as out1:
+        out1.write("col1\tcol2\n")
+        out1.write("\t".join(vcfsamples) + "\n")
+
+    # Grab columns from VCF
+    with open(variants_outfile, "w") as out2:
+        header = ["CHROM", "START", "VARTYPE", "FILTER", "DP", "MQ", "TLOD", "NLOD",
+                  f"GT1", f"GT2",
+                  f"AF1", f"AF2",
+                  f"AD1", f"AD2",
+                  f"DP1", f"DP2"
+                  ]
+        out2.write("\t".join(header) + "\n")
+        for v in vcf:
+            data = [
+                v.CHROM, v.POS, v.var_type, v.FILTER,
+                parse_info_field(v, "DP"),
+                parse_info_field(v, "MQ"),
+                parse_info_field(v, "TLOD"),
+                parse_info_field(v, "NLOD"),
+                v.gt_types[0], v.gt_types[1],
+                ",".join(map(str,
+                             v.format("AF")[0])) if "AF" in v.FORMAT else "",
+                ",".join(map(str,
+                             v.format("AF")[1])) if "AF" in v.FORMAT else "",
+                ",".join(map(str,
+                             v.format("AD")[0])) if "AD" in v.FORMAT else "",
+                ",".join(map(str,
+                             v.format("AD")[1])) if "AD" in v.FORMAT else "",
+                ",".join(map(str,
+                             v.format("DP")[0])) if "DP" in v.FORMAT else "",
+                ",".join(map(str,
+                             v.format("DP")[1])) if "DP" in v.FORMAT else "",
+            ]
+            out2.write("\t".join(map(str, data)) + "\n")
+
+
+# From umccrise
+def parse_info_field(rec, name):
+    val = rec.INFO.get(name)
+    if val is None:
+        return ""
+    elif isinstance(val, float) or isinstance(val, int) or isinstance(val, bool) or isinstance(val, str):
+        return str(val)
+    else:
+        return ",".join(map(str, val))
+
+
+def safe_mkdir(dname):
+    """Make a directory if it doesn't exist, handling concurrent race conditions.
+    """
+    if not dname:
+        return dname
+    num_tries = 0
+    max_tries = 5
+    while not os.path.exists(dname):
+        try:
+            os.makedirs(dname)
+        except OSError:
+            if num_tries > max_tries:
+                raise
+            num_tries += 1
+            time.sleep(2)
+    return dname
+
+
+if __name__ == "__main__":
+    main()
