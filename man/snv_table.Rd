@@ -4,7 +4,7 @@
 \alias{snv_table}
 \title{Generate Table with Single Nucleotide/INDEL Variants}
 \usage{
-snv_table(x, prefix, outdir, conda_env_path)
+snv_table(x, prefix, outdir, env_path)
 }
 \arguments{
 \item{x}{Path to \code{hard-filtered.vcf.gz} file.}
@@ -13,7 +13,7 @@ snv_table(x, prefix, outdir, conda_env_path)
 
 \item{outdir}{Output directory for results.}
 
-\item{conda_env_path}{Path to the directory containing the python environment
+\item{env_path}{Path to the directory containing the python environment
 for snv_table.}
 }
 \value{
@@ -25,8 +25,8 @@ A list with two elements:
 Generate Table with Single Nucleotide/INDEL Variants
 }
 \examples{
-conda_env_path <- "~/my_apps/miniconda/envs/dracarys/bin"
+env_path <- "~/my_apps/miniconda/envs/dracarys/bin"
 x <- system.file("extdata/COLO829.hard-filtered.vcf.gz", package = "dracarys")
-(snvs <- snv_table(x, prefix = "COLO829", outdir = "out1", conda_env_path = conda_env_path))
+(snvs <- snv_table(x, prefix = "COLO829", outdir = tempdir(), env_path = env_path))
 
 }
