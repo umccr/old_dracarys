@@ -39,7 +39,7 @@ manta_sv <- system.file("extdata/COLO829.sv.vcf.gz", package = "dracarys")
 
 circos_png <- plot_circos(
    manta = manta_sv,
-   env_path = "path/to/bin_with_circos",
+   env_path = Sys.getenv("DRACARYS_ENV"),
    outdir = file.path("circos"))
 }
 }

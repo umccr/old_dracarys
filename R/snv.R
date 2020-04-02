@@ -11,7 +11,7 @@
 #'         - A tibble with sample names corresponding to the VCF columns.
 #'
 #' @examples
-#' env_path <- "~/my_apps/miniconda/envs/dracarys/bin"
+#' env_path <- Sys.getenv("DRACARYS_ENV")
 #' x <- system.file("extdata/COLO829.hard-filtered.vcf.gz", package = "dracarys")
 #' (snvs <- snv_table(x, prefix = "COLO829", outdir = tempdir(), env_path = env_path))
 #'
