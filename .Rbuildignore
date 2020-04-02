@@ -1,5 +1,3 @@
-^renv$
-^renv\.lock$
 ^bump\.sh$
 ^conda$
 ^deploy$
@@ -7,6 +5,8 @@
 ^LICENSE\.md$
 ^nogit$
 ^README\.Rmd$
+^renv$
+^renv\.lock$
 ^\.Rhistory$
 ^\.Rproj\.user$
 ^\.travis\.yml$
