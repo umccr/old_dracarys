@@ -1,6 +1,7 @@
 ^bump\.sh$
 ^conda$
 ^deploy$
+^Dockerfile$
 ^dracarys\.Rproj$
 ^LICENSE\.md$
 ^nogit$
