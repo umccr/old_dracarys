@@ -72,6 +72,7 @@ indir <- params$indir
 outdir <- params$outdir
 nm <- params$name
 
+dracarys_env <- shQuote(paste0(Sys.getenv("DRACARYS_ENV"), ":", normalizePath(system.file("src", package = "dracarys"))))
 replay <- list.files(indir, pattern = "-replay.json", full.names = TRUE, recursive = TRUE)
 v <- dracarys::setup_vars(replay)
 
@@ -88,7 +89,7 @@ sv_fn <- v[[1]][["sv_fn"]]
 
 circos_png <- dracarys::plot_circos(
   manta = sv_fn,
-  env_path = "~/my_apps/miniconda/envs/dracarys/bin",
+  env_path = dracarys_env,
   outdir = file.path(outdir, "circos")
 )
 
@@ -137,7 +138,7 @@ sv_tab$sv %>%
 
 ```{r snv_prep, eval=eval_steps$snv}
 snv_fn <- v[[1]][["snv_fn"]]
-snv_tab <- dracarys::snv_table(snv_fn, prefix = nm, outdir = outdir, env_path = "~/my_apps/miniconda/envs/dracarys/bin")
+snv_tab <- dracarys::snv_table(snv_fn, prefix = nm, outdir = outdir, env_path = dracarys_env)
 snv_samples <- snv_tab$samples
 
 standard_chr <- paste0("chr", c(1:22, "X", "Y", "M"))

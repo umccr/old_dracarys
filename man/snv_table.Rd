@@ -25,7 +25,8 @@ A list with two elements:
 Generate Table with Single Nucleotide/INDEL Variants
 }
 \examples{
-env_path <- Sys.getenv("DRACARYS_ENV")
+env_path <- paste(Sys.getenv("DRACARYS_ENV"),
+                  system.file("src", package = "dracarys"), "$PATH", sep = ":")
 x <- system.file("extdata/COLO829.hard-filtered.vcf.gz", package = "dracarys")
 (snvs <- snv_table(x, prefix = "COLO829", outdir = tempdir(), env_path = env_path))
 
