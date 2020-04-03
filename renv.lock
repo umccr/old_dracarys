@@ -331,6 +331,13 @@
       "Repository": "CRAN",
       "Hash": "0a749b4458d19a54acae93c64e3e7c85"
     },
+    "here": {
+      "Package": "here",
+      "Version": "0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "2c0406b8e0a4c3516ab37be62da74e3c"
+    },
     "highr": {
       "Package": "highr",
       "Version": "0.8",
@@ -386,6 +393,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "84b0ee361e2f78d6b7d670db9471c0c5"
+    },
+    "kableExtra": {
+      "Package": "kableExtra",
+      "Version": "1.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "37e11c605b3c0b7207763beda52c8535"
     },
     "knitr": {
       "Package": "knitr",
@@ -491,6 +505,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "49f7258fd86ebeaea1df24d9ded00478"
+    },
+    "patchwork": {
+      "Package": "patchwork",
+      "Version": "1.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "16eee5b5edc41eec5af1149ccdc6b2c9"
     },
     "pebbles": {
       "Package": "pebbles",
@@ -675,12 +696,26 @@
       "Repository": "CRAN",
       "Hash": "2aa84e83767ba93ee6415b439fa981d2"
     },
+    "rvest": {
+      "Package": "rvest",
+      "Version": "0.3.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "6a20c2cdf133ebc7ac45888c9ccc052b"
+    },
     "scales": {
       "Package": "scales",
       "Version": "1.1.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "a1c68369c629ea3188d0676e37069c65"
+    },
+    "selectr": {
+      "Package": "selectr",
+      "Version": "0.4-2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "3838071b66e0c566d55cc26bd6e27bf4"
     },
     "sessioninfo": {
       "Package": "sessioninfo",
@@ -772,6 +807,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "ce4f6271baa94776db692f1cb2055bee"
+    },
+    "webshot": {
+      "Package": "webshot",
+      "Version": "0.5.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e99d80ad34457a4853674e89d5e806de"
     },
     "whisker": {
       "Package": "whisker",
