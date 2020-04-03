@@ -25,17 +25,17 @@
     },
     "MASS": {
       "Package": "MASS",
-      "Version": "7.3-51.4",
+      "Version": "7.3-51.5",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "a94714e63996bc284b8795ec50defc07"
+      "Hash": "9efe80472b21189ebab1b74169808c26"
     },
     "Matrix": {
       "Package": "Matrix",
-      "Version": "1.2-17",
+      "Version": "1.2-18",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "39ea11fb3ad0d759f9f1c053fd442957"
+      "Hash": "08588806cba69f04797dab50627428ed"
     },
     "R.methodsS3": {
       "Package": "R.methodsS3",
@@ -417,10 +417,10 @@
     },
     "lattice": {
       "Package": "lattice",
-      "Version": "0.20-38",
+      "Version": "0.20-41",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "848f8c593fd1050371042d18d152e3d7"
+      "Hash": "fbd9285028b0263d76d18c95ae51a53d"
     },
     "lazyeval": {
       "Package": "lazyeval",
@@ -459,10 +459,10 @@
     },
     "mgcv": {
       "Package": "mgcv",
-      "Version": "1.8-29",
+      "Version": "1.8-31",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "580c326446cf8601f33313e3027df211"
+      "Hash": "4bb7e0c4f3557583e1e8d3c9ffb8ba5c"
     },
     "mime": {
       "Package": "mime",
@@ -480,10 +480,10 @@
     },
     "nlme": {
       "Package": "nlme",
-      "Version": "3.1-141",
+      "Version": "3.1-145",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "cebdbe755f3d628b6afd82490b1eb63a"
+      "Hash": "0ed9365684dc39cdd0bb5bd2f316dc67"
     },
     "openssl": {
       "Package": "openssl",
@@ -498,8 +498,8 @@
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "pebbles",
       "RemoteUsername": "pdiakumis",
+      "RemoteRepo": "pebbles",
       "RemoteRef": "master",
       "RemoteSha": "9e97b4f2293b6ef1cefa5ff1292eafb755229e5e",
       "Hash": "82c199e9d821c8eb30342da6513d7a8a"
@@ -604,15 +604,15 @@
     },
     "renv": {
       "Package": "renv",
-      "Version": "0.9.3-65",
+      "Version": "0.9.3-66",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteUsername": "rstudio",
       "RemoteRepo": "renv",
+      "RemoteUsername": "rstudio",
       "RemoteRef": "master",
-      "RemoteSha": "8665848a8a384262ffcb82449a49aca1f76398bc",
-      "Hash": "8b89db360be72532ea404b3dfed08b18"
+      "RemoteSha": "5d590890e7e20c8d1222484f2c086af2b7965ac7",
+      "Hash": "75411996eeb305e4c50688da84431bda"
     },
     "rex": {
       "Package": "rex",
@@ -639,14 +639,13 @@
       "Package": "rock",
       "Version": "0.0.16",
       "Source": "GitHub",
-      "Remotes": "github::pdiakumis/pebbles",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "rock",
       "RemoteUsername": "pdiakumis",
+      "RemoteRepo": "rock",
       "RemoteRef": "master",
       "RemoteSha": "7f4a84e6a35adc727b9230f64d1043b664b1e66e",
-      "Hash": "9dde0955e024ac8664db156079f582a6"
+      "Hash": "efa52e48ca5986142682e2c4854323fe"
     },
     "roxygen2": {
       "Package": "roxygen2",
