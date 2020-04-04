@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 
 
-# suppressPackageStartupMessages(require(argparser))
-# suppressPackageStartupMessages(require(glue))
-# suppressPackageStartupMessages(require(rmarkdown))
+suppressPackageStartupMessages(require(argparser))
+suppressPackageStartupMessages(require(glue))
+suppressPackageStartupMessages(require(rmarkdown))
 
 
 p <- argparser::arg_parser(description = "Play with DRAGEN fire", name = "dracarys", hide.opts = TRUE)
@@ -19,12 +19,15 @@ if (!dir.exists(argv$outdir)) {
   dir.create(argv$outdir)
 }
 outdir <- normalizePath(argv$outdir)
-tumor_normal_rmd <- system.file("rmd", "tumor_normal", "tumor_normal.Rmd", package = "dracarys")
+rmd_from_pkg <- system.file("rmd", "tumor_normal", "tumor_normal.Rmd", package = "dracarys")
+file.copy(from = rmd_from_pkg, to = outdir)
+rmd <- file.path(outdir, basename(rmd_from_pkg))
 
 cat(glue::glue("indir: {indir}"), sep = "\n")
 cat(glue::glue("outdir: {outdir}"), sep = "\n")
 cat(glue::glue("name: {name}"), sep = "\n")
-cat(glue::glue("rmd: {tumor_normal_rmd}"))
+cat(glue::glue("rmd_from_pkg: {rmd_from_pkg}"))
+cat(glue::glue("rmd: {rmd}"))
 
 params_list <- list(
   indir = indir,
@@ -32,7 +35,8 @@ params_list <- list(
   name = name
 )
 
-rmarkdown::render(input = tumor_normal_rmd,
+stopifnot(file.exists(rmd))
+rmarkdown::render(input = rmd,
                   output_file = paste0(name, "_dracarys.html"),
                   output_dir = outdir,
                   params = params_list)

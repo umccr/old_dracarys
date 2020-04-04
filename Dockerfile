@@ -10,7 +10,8 @@ RUN apt-get update && \
     bzip2 \
     curl \
     less \
-    vim
+    vim \
+    && apt-get clean
 
 # dracarys R package + report dependencies
 RUN R -e "install.packages(c('argparser', 'kableExtra', 'patchwork'), repos = c(CRAN = 'https://cloud.r-project.org'))"
@@ -21,7 +22,7 @@ ENV PATH "/home/dracarys/inst/src:${PATH}"
 RUN wget -nv https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
     bash miniconda.sh -b -p /miniconda && rm miniconda.sh
 ENV PATH "/miniconda/bin:${PATH}"
-RUN conda env create -f conda/environment.yml
+RUN conda env create -f conda/environment.yml && conda clean -afy
 ENV PATH "/miniconda/envs/dracarys/bin:${PATH}"
 
 # set env vars for dracarys
