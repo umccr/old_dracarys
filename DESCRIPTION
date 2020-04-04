@@ -1,6 +1,6 @@
 Package: dracarys
 Title: Playing with DRAGEN fire
-Version: 0.0.1
+Version: 0.0.2
 Description: Playing with output from DRAGEN.
 Authors@R: 
     person(given = "Peter",

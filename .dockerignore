@@ -1,0 +1,13 @@
+*
+!conda
+!.dockerignore
+!DESCRIPTION
+!inst
+!LICENSE
+!LICENSE.md
+!man
+!NAMESPACE
+!R
+!.Rbuildignore
+!.Rinstignore
+!tests

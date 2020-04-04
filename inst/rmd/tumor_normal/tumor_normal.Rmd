@@ -1,6 +1,6 @@
 ---
 author: "University of Melbourne Centre for Cancer Research"
-date: "`r format(Sys.time(), '%a %Y-%b-%d %H:%M')`"
+date: "`r Sys.time()`"
 output:
   html_document:
     theme: flatly # cosmo # simplex
