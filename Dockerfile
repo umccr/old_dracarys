@@ -24,7 +24,8 @@ ENV PATH "/miniconda/bin:${PATH}"
 RUN conda env create -f conda/environment.yml
 ENV PATH "/miniconda/envs/dracarys/bin:${PATH}"
 
-
 # set env vars for dracarys
 ENV DRACARYS_ENV "${PATH}"
 ENV TZ "Australia/Melbourne"
+
+ENTRYPOINT [ "dracarys" ]

@@ -72,7 +72,7 @@ indir <- params$indir
 outdir <- params$outdir
 nm <- params$name
 
-dracarys_env <- shQuote(paste0(Sys.getenv("DRACARYS_ENV"), ":", normalizePath(system.file("src", package = "dracarys"))))
+dracarys_env <- shQuote(Sys.getenv("DRACARYS_ENV"))
 replay <- list.files(indir, pattern = "-replay.json", full.names = TRUE, recursive = TRUE)
 v <- dracarys::setup_vars(replay)
 

@@ -2,6 +2,7 @@
 ^conda$
 ^deploy$
 ^Dockerfile$
+^.dockerignore$
 ^dracarys\.Rproj$
 ^LICENSE\.md$
 ^nogit$
