@@ -1,17 +1,25 @@
 #!/usr/bin/env Rscript
 
-
 suppressPackageStartupMessages(require(argparser))
 suppressPackageStartupMessages(require(glue))
 suppressPackageStartupMessages(require(rmarkdown))
+suppressPackageStartupMessages(require(R.utils))
 
 
-p <- argparser::arg_parser(description = "Play with DRAGEN fire", name = "dracarys", hide.opts = TRUE)
-p <- argparser::add_argument(p, arg = "--name", help = "name of sample")
-p <- argparser::add_argument(p, arg = "--outdir", help = "output directory", default = "dracarys")
-p <- argparser::add_argument(p, arg = "--indir", help = "input dir")
-
-argv <- argparser::parse_args(p)
+p <- arg_parser(
+  description = "Play with DRAGEN fire",
+  name = "dracarys", hide.opts = TRUE)
+p <- add_argument(p,
+                  arg = "--name",
+                  help = "name of sample")
+p <- add_argument(p,
+                  arg = "--outdir",
+                  help = "output directory",
+                  default = "dracarys")
+p <- add_argument(p,
+                  arg = "--indir",
+                  help = "input dir")
+argv <- parse_args(p)
 
 name <- argv$name
 indir <- normalizePath(argv$indir)
@@ -19,15 +27,24 @@ if (!dir.exists(argv$outdir)) {
   dir.create(argv$outdir)
 }
 outdir <- normalizePath(argv$outdir)
-rmd_from_pkg <- system.file("rmd", "tumor_normal", "tumor_normal.Rmd", package = "dracarys")
-file.copy(from = rmd_from_pkg, to = outdir)
-rmd <- file.path(outdir, basename(rmd_from_pkg))
 
-cat(glue::glue("indir: {indir}"), sep = "\n")
-cat(glue::glue("outdir: {outdir}"), sep = "\n")
-cat(glue::glue("name: {name}"), sep = "\n")
-cat(glue::glue("rmd_from_pkg: {rmd_from_pkg}"))
-cat(glue::glue("rmd: {rmd}"))
+rmd_paths <- function(outdir) {
+  rmd_outdir <- file.path(outdir, "rmd")
+  rmd_from_pkg <- system.file(
+    "rmd/tumor_normal/tumor_normal.Rmd",
+    package = "dracarys")
+  R.utils::copyDirectory(dirname(rmd_from_pkg), rmd_outdir)
+  rmd_infile <- file.path(rmd_outdir, basename(rmd_from_pkg))
+
+  list(rmd_outdir = rmd_outdir, rmd_infile = rmd_infile)
+}
+rmd <- rmd_paths(outdir)
+
+cat(paste0("[", as.character(Sys.time()), "]"), "START dracarys\n")
+cat(glue("indir: {indir}"), sep = "\n")
+cat(glue("outdir: {outdir}"), sep = "\n")
+cat(glue("name: {name}"), sep = "\n")
+cat(glue("rmd: {rmd$rmd_infile}"), sep = "\n")
 
 params_list <- list(
   indir = indir,
@@ -35,8 +52,11 @@ params_list <- list(
   name = name
 )
 
-stopifnot(file.exists(rmd))
-rmarkdown::render(input = rmd,
-                  output_file = paste0(name, "_dracarys.html"),
-                  output_dir = outdir,
-                  params = params_list)
+rmarkdown::render(
+  input = rmd$rmd_infile,
+  output_file = paste0(name, "_dracarys.html"),
+  output_dir = rmd$rmd_outdir,
+  params = params_list
+)
+
+cat(paste0("[", as.character(Sys.time()), "]", " END dracarys"))

@@ -13,11 +13,6 @@ RUN apt-get update && \
     vim \
     && apt-get clean
 
-# dracarys R package + report dependencies
-RUN R -e "install.packages(c('argparser', 'kableExtra', 'patchwork'), repos = c(CRAN = 'https://cloud.r-project.org'))"
-RUN R -e "remotes::install_local('.')"
-ENV PATH "/home/dracarys/inst/src:${PATH}"
-
 # conda environment
 RUN wget -nv https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
     bash miniconda.sh -b -p /miniconda && rm miniconda.sh
@@ -25,7 +20,11 @@ ENV PATH "/miniconda/bin:${PATH}"
 RUN conda env create -f conda/environment.yml && conda clean -afy
 ENV PATH "/miniconda/envs/dracarys/bin:${PATH}"
 
-# set env vars for dracarys
+# dracarys R package + report dependencies
+RUN R -e "install.packages(c('argparser', 'kableExtra', 'patchwork'), repos = c(CRAN = 'https://cloud.r-project.org'))"
+RUN R -e "remotes::install_local('.')"
+ENV PATH "/home/dracarys/inst/src:${PATH}"
+
 ENV DRACARYS_ENV "${PATH}"
 ENV TZ "Australia/Melbourne"
 

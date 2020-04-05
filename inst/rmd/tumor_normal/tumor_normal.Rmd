@@ -1,6 +1,6 @@
 ---
 author: "University of Melbourne Centre for Cancer Research"
-date: "`r Sys.time()`"
+date: "`r as.character(paste(Sys.time(), Sys.timezone()))`"
 output:
   html_document:
     theme: flatly # cosmo # simplex
