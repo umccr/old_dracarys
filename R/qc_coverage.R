@@ -191,6 +191,7 @@ plot_wgs_contig_coverage <- function(xs, top_alt_n = 15) {
     ggplot2::ggplot(
       ggplot2::aes(x = .data$chrom, y = .data$coverage,
                    colour = .data$label, group = .data$label)) +
+    ggplot2::geom_point() +
     ggplot2::geom_line() +
     ggplot2::scale_y_continuous(
       limits = c(0, NA), expand = c(0, 0), labels = scales::comma,
