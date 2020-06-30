@@ -13,7 +13,7 @@ read_time_metrics(x)
 tibble with the following columns:
 \itemize{
 \item Step: DRAGEN step
-\item Time: time in HH:MM:SS
+\item Time: time in HH:MM
 }
 }
 \description{
