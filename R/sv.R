@@ -118,9 +118,9 @@ sv_table <- function(manta) {
 
   sample_cols <- tibble::as_tibble(x$vcf[sample_nms]) %>%
     dplyr::mutate(num = dplyr::row_number()) %>%
-    tidyr::pivot_longer(cols = sample_nms, names_to = "sample") %>%
+    tidyr::pivot_longer(cols = dplyr::all_of(sample_nms), names_to = "sample") %>%
     tidyr::separate(col = .data$value, into = req_format_fields, sep = ":", fill = "right") %>%
-    tidyr::pivot_longer(cols = req_format_fields, names_to = "field") %>%
+    tidyr::pivot_longer(cols = dplyr::all_of(req_format_fields), names_to = "field") %>%
     tidyr::pivot_wider(names_from = c(.data$sample, .data$field), values_from = .data$value, id_cols = .data$num) %>%
     dplyr::arrange(.data$num)
 
@@ -135,9 +135,18 @@ sv_table <- function(manta) {
     dplyr::select(.data$num, dplyr::everything())
 
   # BNDs
-  df_bnd <- DF %>%
-    dplyr::filter(.data$SVTYPE == "BND") %>%
-    dplyr::bind_cols(., .[match(.$id, .$MATEID), c("chrom1", "pos1")]) %>%
+  df_bnd1 <- DF %>%
+    dplyr::filter(.data$SVTYPE == "BND")
+
+  match_id2mateid <- match(df_bnd1$id, df_bnd1$MATEID)
+
+  df_bnd2 <-
+    df_bnd1[match_id2mateid, c("chrom1", "pos1")] %>%
+    dplyr::rename(chrom11 = .data$chrom1,
+                  pos11 = .data$pos1)
+
+  df_bnd <-
+    dplyr::bind_cols(df_bnd1, df_bnd2) %>%
     dplyr::rename(chrom2 = .data$chrom11) %>%
     dplyr::mutate(pos2 = ifelse(is.na(.data$pos2), .data$pos11, .data$pos2),
                   bndid = substring(.data$id, nchar(.data$id)))
@@ -176,3 +185,4 @@ sv_table <- function(manta) {
   structure(list(sv = sv), class = "sv")
 
 }
+
