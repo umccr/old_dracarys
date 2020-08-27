@@ -432,6 +432,7 @@ dpct %>%
 ### DRAGEN {.tabset .tabset-fade}
 
 #### Version
+
 ```{r dragen_replay_system}
 replay <- dracarys::read_replay(v[[1]][["replay_fn"]])
 replay$system %>%
@@ -443,6 +444,7 @@ replay$system %>%
 ```
 
 #### Parameters
+
 ```{r dragen_replay_config}
 replay$dragen_config %>%
   DT::datatable(rownames = FALSE,
@@ -455,6 +457,7 @@ replay$dragen_config %>%
 ```
 
 ### Report Inputs
+
 ```{r report_inputs, eval=T}
 dplyr::tibble(name = names(params), value = unlist(params)) %>%
   knitr::kable(format = "html") %>%
