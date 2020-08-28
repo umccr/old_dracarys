@@ -23,3 +23,31 @@ read_roh_metrics <- function(x) {
     tidyr::pivot_wider(names_from = .data$key, values_from = .data$value)
 
 }
+
+#' Read ROH BED File
+#'
+#' @param x Path to `roh.bed` file.
+#'
+#' @return A tibble with 4 columns:
+#'         - `chrom`, `start`, `end`: coordinates for one region of homozygosity (0-based, half-open interval).
+#'           The `chrom` is returned with a `hs` prefix instead of `chr`.
+#'         - `score`: function of the number of homozygous and heterozygous variants,
+#'           where each homozygous variant increases the score by a pre-defined value,
+#'           and each heterozygous variant reduces the score by (1 - pre-defined value),
+#'           where the pre-defined value is in range (0, 1).
+#'
+#' @examples
+#' x <- system.file("extdata/COLO829_N.roh.bed", package = "dracarys")
+#' (roh <- rohbed2circos(x))
+#'
+#' @testexamples
+#' expect_equal(ncol(roh), 4)
+#'
+#' @export
+rohbed2circos <- function(x) {
+  readr::read_tsv(x, col_names = c("chrom", "start", "end", "value", "hom", "het"),
+                  col_types = "cddddd") %>%
+    dplyr::mutate(`#chromosome` = sub("chr", "hs", .data$chrom)) %>%
+    dplyr::select(.data$`#chromosome`, .data$start, .data$end, .data$value)
+
+}

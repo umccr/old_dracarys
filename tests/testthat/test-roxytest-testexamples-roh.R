@@ -10,3 +10,12 @@ test_that("Function read_roh_metrics() @ L17", {
   expect_equal(nrow(roh), 1)
 })
 
+
+test_that("Function rohbed2circos() @ L47", {
+  
+  x <- system.file("extdata/COLO829_N.roh.bed", package = "dracarys")
+  (roh <- rohbed2circos(x))
+  
+  expect_equal(ncol(roh), 4)
+})
+

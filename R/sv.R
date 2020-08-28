@@ -1,6 +1,6 @@
 #' Plot SVs in Circos
 #'
-#' Generates a Circos plot of  the SVs found in the `sv.vcf.gz` VCF file output
+#' Generates a Circos plot of the SVs found in the `sv.vcf.gz` VCF file output
 #' by DRAGEN.
 #'
 #' @param manta Path to `sv.vcf.gz` file.
